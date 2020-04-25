@@ -117,3 +117,7 @@ work_dirs/
 
 # Pytorch
 *.pth
+
+# dota
+results/
+analysis/
