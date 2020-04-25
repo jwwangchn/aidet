@@ -64,13 +64,13 @@ class DOTADataset(CocoDataset):
         """Parse bbox and mask annotation.
 
         Args:
-            img_info (dict): Image info of an image.
             ann_info (list[dict]): Annotation info of an image.
+            with_mask (bool): Whether to parse mask annotations.
 
         Returns:
             dict: A dict containing the following keys: bboxes, bboxes_ignore,
-                labels, masks, seg_map.
-                "masks" are already decoded into binary masks.
+                labels, masks, seg_map. "masks" are raw annotations and not
+                decoded into binary masks.
         """
         gt_bboxes = []
         gt_labels = []
@@ -103,12 +103,14 @@ class DOTADataset(CocoDataset):
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
+        seg_map = img_info['filename'].replace('jpg', 'png')
+
         ann = dict(
             bboxes=gt_bboxes,
             labels=gt_labels,
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
-            seg_map=img_info['segm_file'])
+            seg_map=seg_map)
 
         return ann
 
