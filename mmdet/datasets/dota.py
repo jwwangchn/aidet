@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import tempfile
 import shutil
+import pandas as pd
 
 import mmcv
 import numpy as np
@@ -12,7 +13,7 @@ from mmdet.utils import print_log
 from .coco import CocoDataset
 from .registry import DATASETS
 
-from wwtool import segm2rbbox, Email
+from wwtool import segm2rbbox
 from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
 
 
@@ -46,8 +47,8 @@ class DOTADataset(CocoDataset):
                              "obb": 'dota_obb'}
         self.mergetxt_save_dir = {"hbb": 'merge_dota_hbb',
                                   "obb": 'merge_dota_obb'}
-        self.txt_file_prefix = {"hbb": 'Task1',
-                                "obb": 'Task2'}
+        self.txt_file_prefix = {"hbb": 'Task2',
+                                "obb": 'Task1'}
 
     def _filter_imgs(self, min_size=32):
         """Filter images too small or without ground truths."""
@@ -168,12 +169,12 @@ class DOTADataset(CocoDataset):
             filenames.append(hbb_obb_result['file_name'])
 
         # 3. generate subimage results
-        print_log("\n------------------------------start write results to txt-----------------------------", logger=logger)
+        print_log("\nStart write results to txt", logger=logger)
         for task in ['hbb', 'obb']:
             self.format_results(submit_path, filenames, bboxes[task], scores, labels, task)
 
         # 4. generate original image results
-        print_log("\n------------------------------start merge txt file-----------------------------", logger=logger)
+        print_log("\nStart merge txt file", logger=logger)
         for task in ['hbb', 'obb']:
             self.merge_txt(submit_path, task)
 
@@ -228,16 +229,18 @@ class DOTADataset(CocoDataset):
                  submit_path='./results/dota/common_submit',
                  annopath='./data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt',
                  imageset_file='./data/dota/v0/evaluation_sample/testset.txt',
-                 logger=None):
+                 logger=None,
+                 excel=None):
         tasks = metric
         mmcv.mkdir_or_exist(submit_path)
-        filename_prefix = {'hbb': "/Task1_{:s}.txt",
-                           'obb': "/Task2_{:s}.txt"}
+        filename_prefix = {'hbb': "/Task2_{:s}.txt",
+                           'obb': "/Task1_{:s}.txt"}
 
         # convert results to txt file and save file (DOTA format)
         self.results2txt(results, submit_path, logger)
 
         # evaluating tasks of DOTA
+        two_task_aps = []
         for task in tasks:
             msg = "Evaluating in DOTA {} Task".format(task)
             if logger is None:
@@ -245,14 +248,25 @@ class DOTADataset(CocoDataset):
             print_log(msg, logger=logger)
             result_path = os.path.join(submit_path, self.mergetxt_save_dir[task] + filename_prefix[task])
 
-            self._evaluation_dota(result_path, annopath, imageset_file, task, logger)
+            mean_AP, class_AP = self._evaluation_dota(result_path, annopath, imageset_file, task, logger)
+            class_AP['mAP'] = mean_AP
+            two_task_aps.append(class_AP)
+
+        df = pd.DataFrame(data=two_task_aps)
+        writer = pd.ExcelWriter(excel, engine='xlsxwriter')
+        df=df.style.set_properties(**{'text-align': 'center'})
+        df.to_excel(writer, sheet_name='Sheet1')
+        worksheet = writer.sheets['Sheet1']
+        worksheet.set_column("B:R", 12)
+        writer.save()
+
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
         # mean_metrics = [mean ap, mean precision, mean reccall]
-        mean_metrics = 0
+        mean_AP = 0
         # metrics = {"class name": [ap, precision, reccall]}
-        class_metrics = dict()
-
+        class_AP = dict()
+        class_AP['Task'] = task
         for idx, classname in enumerate(DOTADataset.CLASSES_OFFICIAL):
             reccall, precision, ap = self.dota_eval_functions[task](detpath,
                 annopath,
@@ -260,13 +274,14 @@ class DOTADataset(CocoDataset):
                 classname,
                 ovthresh=0.5,
                 use_07_metric=True)
+            ap_format = round(ap * 100.0, 2)
+            class_AP[DOTADataset.CLASSES_OFFICIAL[idx]] = ap_format
+            mean_AP = mean_AP + ap_format
 
-            class_metrics[DOTADataset.CLASSES_OFFICIAL[idx]] = ap
-            mean_metrics = mean_metrics + float(ap)
-
-        mean_metrics = mean_metrics/(len(DOTADataset.CLASSES_OFFICIAL))
+        mean_AP = mean_AP/(len(DOTADataset.CLASSES_OFFICIAL))
+        mean_AP = round(mean_AP, 2)
         
-        print_log('mean metrics: {}'.format(mean_metrics), logger=logger)
-        print_log('class metrics: {}'.format(class_metrics), logger=logger)
+        print_log('mAP: {}'.format(mean_AP), logger=logger)
+        print_log('class metrics: {}'.format(class_AP), logger=logger)
         
-        return mean_metrics, class_metrics
+        return mean_AP, class_AP
