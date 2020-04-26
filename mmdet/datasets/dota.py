@@ -249,7 +249,7 @@ class DOTADataset(CocoDataset):
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
         # mean_metrics = [mean ap, mean precision, mean reccall]
-        mean_metrics = np.array([0, 0, 0])
+        mean_metrics = 0
         # metrics = {"class name": [ap, precision, reccall]}
         class_metrics = dict()
 
@@ -261,8 +261,8 @@ class DOTADataset(CocoDataset):
                 ovthresh=0.5,
                 use_07_metric=True)
 
-            class_metrics[DOTADataset.CLASSES_OFFICIAL[idx]] = [ap, precision, reccall]
-            mean_metrics = mean_metrics + np.array([ap, precision, reccall])
+            class_metrics[DOTADataset.CLASSES_OFFICIAL[idx]] = ap
+            mean_metrics = mean_metrics + float(ap)
 
         mean_metrics = mean_metrics/(len(DOTADataset.CLASSES_OFFICIAL))
         

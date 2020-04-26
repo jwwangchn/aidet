@@ -30,7 +30,7 @@ then
     echo "==== start 4 GPU coco test ===="
     mkdir -p results/${dataset}/${model}
 
-    ./tools/dist_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb
+    ./tools/dist_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=./results/dota/${model} annopath=./data/dota/v0/test/labelTxt-v1.0/{:s}.txt imageset_file=./data/dota/v0/test/testset.txt
 elif [ $2 == 2 ]
 then
     echo "==== start 1 GPU coco test ===="
