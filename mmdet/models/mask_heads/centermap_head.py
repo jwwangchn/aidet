@@ -1,4 +1,10 @@
-from mmdet.ops import ConvModule
+import mmcv
+import numpy as np
+import pycocotools.mask as mask_util
+import torch
+
+from mmdet.core import mask_target
+
 from ..registry import HEADS
 from .fcn_mask_head import FCNMaskHead
 
