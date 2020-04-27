@@ -4,6 +4,8 @@ import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
 
+import wwtool
+
 from ..registry import PIPELINES
 
 
@@ -83,12 +85,25 @@ class LoadAnnotations(object):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
-                 poly2mask=True):
+                 poly2mask=True,
+                 poly2centermap=False,
+                 centermap_encode='centerness',
+                 centermap_rate=0.5,
+                 centermap_factor=2):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
         self.poly2mask = poly2mask
+        self.poly2centermap = poly2centermap
+        self.centermap_encode = centermap_encode
+        self.centerness_image = wwtool.generate_centerness_image(height=512, 
+                                                                 width=512, 
+                                                                 factor=centermap_factor,
+                                                                 threshold = int(centermap_rate * 255))
+        self.anchor_centermaps = {'centerness': self.centerness_image,
+                                  'gaussian': None,
+                                  'ellipse': None}
 
     def _load_bboxes(self, results):
         ann_info = results['ann_info']
@@ -120,11 +135,23 @@ class LoadAnnotations(object):
         mask = maskUtils.decode(rle)
         return mask
 
+    def _poly2centermap(self, mask_ann, img_h, img_w):
+        centermap = np.zeros((img_h, img_w), dtype=np.uint8)
+        anchor_centermap = self.anchor_centermaps[self.centermap_encode]
+        transformed, location = wwtool.pointobb2pseudomask(mask_ann,
+                                                           anchor_centermap, 
+                                                           host_height=img_h, 
+                                                           host_width=img_w)
+        centermap[location[1]:location[3], location[0]:location[2]] += transformed
+        return centermap
+
     def _load_masks(self, results):
         h, w = results['img_info']['height'], results['img_info']['width']
         gt_masks = results['ann_info']['masks']
         if self.poly2mask:
             gt_masks = [self._poly2mask(mask, h, w) for mask in gt_masks]
+        elif self.poly2centermap:
+            gt_masks = [self._poly2centermap(mask, h, w) for mask in gt_masks]
         results['gt_masks'] = gt_masks
         results['mask_fields'].append('gt_masks')
         return results
