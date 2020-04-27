@@ -45,7 +45,7 @@ class CenterMapHead(FCNMaskHead):
             list[list]: encoded masks
         """
         if isinstance(mask_pred, torch.Tensor):
-            mask_pred = mask_pred.sigmoid().cpu().numpy()
+            mask_pred = mask_pred.cpu().numpy()
         assert isinstance(mask_pred, np.ndarray)
         # when enabling mixed precision training, mask_pred may be float16
         # numpy array
