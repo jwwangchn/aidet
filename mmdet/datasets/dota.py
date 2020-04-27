@@ -41,8 +41,8 @@ class DOTADataset(CocoDataset):
                                           proposal_file,
                                           test_mode,
                                           filter_empty_gt)
-        self.dota_eval_functions = {"hbb": dota_eval_task1,
-                                    "obb": dota_eval_task2}
+        self.dota_eval_functions = {"hbb": dota_eval_task2,
+                                    "obb": dota_eval_task1}
         self.txt_save_dir = {"hbb": 'dota_hbb',
                              "obb": 'dota_obb'}
         self.mergetxt_save_dir = {"hbb": 'merge_dota_hbb',
