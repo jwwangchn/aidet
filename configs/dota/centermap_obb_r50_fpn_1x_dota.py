@@ -52,12 +52,12 @@ model = dict(
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
         type='CenterMapHead',
-        num_convs=4,
+        num_convs=10,
         in_channels=256,
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask=True, loss_weight=1.0)))
+            type='CenterMapLoss', use_mask=True, loss_weight=6.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -147,7 +147,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=1,
+    imgs_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
