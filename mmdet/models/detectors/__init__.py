@@ -1,3 +1,4 @@
+from .centermap_obb import CenterMapOBB
 from .atss import ATSS
 from .base import BaseDetector
 from .cascade_rcnn import CascadeRCNN
@@ -17,7 +18,7 @@ from .single_stage import SingleStageDetector
 from .two_stage import TwoStageDetector
 
 __all__ = [
-    'ATSS', 'BaseDetector', 'SingleStageDetector', 'TwoStageDetector', 'RPN',
+    'CenterMapOBB', 'ATSS', 'BaseDetector', 'SingleStageDetector', 'TwoStageDetector', 'RPN',
     'FastRCNN', 'FasterRCNN', 'MaskRCNN', 'CascadeRCNN', 'HybridTaskCascade',
     'DoubleHeadRCNN', 'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN',
     'RepPointsDetector', 'FOVEA'
