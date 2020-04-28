@@ -57,7 +57,7 @@ model = dict(
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask=True, loss_weight=6.0)))
+            type='CenterMapLoss', use_mask=True, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -123,7 +123,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True, poly2mask=False, poly2centermap=True, centermap_encode='centerness', centermap_rate=0.5, centermap_factor=2),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True, poly2mask=False, poly2centermap=True, centermap_encode='centerness', centermap_rate=0.5, centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
