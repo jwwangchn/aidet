@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='mask_rcnn_r50_fpn_1x_dota'
+model='centermap_obb_r50_fpn_1x_dota'
 epoch=12
 dataset='dota'
 
@@ -15,7 +15,7 @@ elif [ $1 == 2 ]
 then
     # train and debug
     echo "==== start debug training ===="
-    export CUDA_VISIBLE_DEVICES=1
+    export CUDA_VISIBLE_DEVICES=0
     python tools/train.py configs/${dataset}/${model}.py --gpus 1
 elif [ $1 == 0 ]
 then
