@@ -1,4 +1,5 @@
 import inspect
+import cv2
 
 import mmcv
 import numpy as np
@@ -140,6 +141,14 @@ class Resize(object):
             bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, img_shape[0] - 1)
             results[key] = bboxes
 
+    def _resize_rbboxes(self, results):
+        img_shape = results['img_shape']
+        for key in results.get('rbbox_fields', []):
+            rbboxes = results[key] * results['scale_factor']
+            rbboxes[:, 0::2] = np.clip(rbboxes[:, 0::2], 0, img_shape[1] - 1)
+            rbboxes[:, 1::2] = np.clip(rbboxes[:, 1::2], 0, img_shape[0] - 1)
+            results[key] = rbboxes
+
     def _resize_masks(self, results):
         for key in results.get('mask_fields', []):
             if results[key] is None:
@@ -179,6 +188,7 @@ class Resize(object):
         self._resize_bboxes(results)
         self._resize_masks(results)
         self._resize_seg(results)
+        self._resize_rbboxes(results)
         return results
 
     def __repr__(self):
@@ -232,6 +242,58 @@ class RandomFlip(object):
                 'Invalid flipping direction "{}"'.format(direction))
         return flipped
 
+    def _pointobb2bbox(self, pointobb):
+        """
+        docstring here
+            :param self: 
+            :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+            return [xmin, ymin, xmax, ymax]
+        """
+        xmin = min(pointobb[0::2])
+        ymin = min(pointobb[1::2])
+        xmax = max(pointobb[0::2])
+        ymax = max(pointobb[1::2])
+        bbox = [xmin, ymin, xmax, ymax]
+        
+        return bbox
+
+    def _pointobb_best_point_sort(self, pointobb):
+        """
+        Find the "best" point and sort all points as the order that best point is first point
+            :param self: self
+            :param pointobb (list): unsorted pointobb, (1*8) 
+        """
+        xmin, ymin, xmax, ymax = self._pointobb2bbox(pointobb)
+        reference_bbox = np.array([xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax])
+        normalize = np.array([1.0, 1.0] * 4)
+        combinate = [np.roll(pointobb, 0), np.roll(pointobb, 2), np.roll(pointobb, 4), np.roll(pointobb, 6)]
+        distances = np.array([np.sum(((coord - reference_bbox) / normalize)**2) for coord in combinate])
+        order = distances.argsort()
+        return combinate[order[0]].tolist()
+
+    def rbbox_flip(self, rbboxes, img_shape, direction):
+        """Flip rbboxes horizontally.
+
+        Args:
+            rbboxes(ndarray): shape (..., 8*k) (x1, y1, x2, y2, x3, y3, x4, y4)
+            img_shape(tuple): (height, width)
+        """
+        assert rbboxes.shape[-1] % 8 == 0
+        flipped = rbboxes.copy()
+        if direction == 'horizontal':
+            w = img_shape[1]
+            flipped[..., 0::2] = w - flipped[..., 0::2] - 1
+
+        elif direction == 'vertical':
+            h = img_shape[0]
+            flipped[..., 1::2] = h - flipped[..., 1::2] - 1
+        else:
+            raise ValueError(
+                'Invalid flipping direction "{}"'.format(direction))
+        flipped = np.array([self._pointobb_best_point_sort(pointobb) for pointobb in flipped.tolist()])
+        
+        return flipped
+
     def __call__(self, results):
         if 'flip' not in results:
             flip = True if np.random.rand() < self.flip_ratio else False
@@ -263,6 +325,12 @@ class RandomFlip(object):
             for key in results.get('seg_fields', []):
                 results[key] = mmcv.imflip(
                     results[key], direction=results['flip_direction'])
+
+            # flip rbboxes (pointobb)
+            for key in results.get('rbbox_fields', []):
+                results[key] = self.rbbox_flip(results[key],
+                                              results['img_shape'],
+                                              results['flip_direction'])
         return results
 
     def __repr__(self):
@@ -904,4 +972,98 @@ class Albu(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += '(transforms={})'.format(self.transforms)
+        return repr_str
+
+
+@PIPELINES.register_module
+class Pointobb2RBBox(object):
+    """convert pointobb to corresponding regression-based obbs
+    """
+
+    def __init__(self,
+                encoding_method='thetaobb'):
+        self.encoding_method = encoding_method
+
+    def _pointobb2bbox(self, pointobb):
+        """
+        docstring here
+            :param self: 
+            :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+            return [xmin, ymin, xmax, ymax]
+        """
+        xmin = min(pointobb[0::2])
+        ymin = min(pointobb[1::2])
+        xmax = max(pointobb[0::2])
+        ymax = max(pointobb[1::2])
+        bbox = [xmin, ymin, xmax, ymax]
+
+        return bbox
+
+    def _pointobb_best_point_sort(self, pointobb):
+        """
+        Find the "best" point and sort all points as the order that best point is first point
+            :param self: self
+            :param pointobb (list): unsorted pointobb, (1*8) 
+        """
+        xmin, ymin, xmax, ymax = self._pointobb2bbox(pointobb)
+        reference_bbox = np.array([xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax])
+        normalize = np.array([1.0, 1.0] * 4)
+        combinate = [np.roll(pointobb, 0), np.roll(pointobb, 2), np.roll(pointobb, 4), np.roll(pointobb, 6)]
+        distances = np.array([np.sum(((coord - reference_bbox) / normalize)**2) for coord in combinate])
+        order = distances.argsort()
+        return combinate[order[0]].tolist()
+
+    def _pointobb2thetaobb(self, results):
+        """
+        convert pointobb to thetaobb
+            :param self: 
+            :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+        """
+        for key in results.get('rbbox_fields', []):
+            rbboxes = results[key]
+            thetaobbs = []
+            for pointobb in rbboxes.tolist():
+                pointobb = np.int0(np.array(pointobb))
+                pointobb.resize(4, 2)
+                rect = cv2.minAreaRect(pointobb)
+                x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
+                theta = theta / 180.0 * np.pi
+                thetaobbs.append([x, y, w, h, theta])
+
+            results[key] = np.array(thetaobbs)
+
+    def _pointobb2hobb(self, results):
+        """
+        convert pointobb to thetaobb
+            :param self: 
+            :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+        """
+        for key in results.get('rbbox_fields', []):
+            rbboxes = results[key]
+            hobbs = []
+            for pointobb in rbboxes.tolist():
+                sorted_pointobb = self._pointobb_best_point_sort(pointobb)
+                first_point = [sorted_pointobb[0], sorted_pointobb[1]]
+                second_point = [sorted_pointobb[2], sorted_pointobb[3]]
+
+                end_point = [sorted_pointobb[6], sorted_pointobb[7]]
+                
+                h = np.sqrt((end_point[0] - first_point[0])**2 + (end_point[1] - first_point[1])**2)
+
+                hobbs.append(first_point + second_point + [h])
+
+            results[key] = np.array(hobbs)
+
+    def __call__(self, results):
+        if self.encoding_method == 'thetaobb':
+            self._pointobb2thetaobb(results)
+        if self.encoding_method == 'hobb':
+            self._pointobb2hobb(results)
+        if self.encoding_method == 'pointobb':
+            pass
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += ('(encoding_method={})').format(self.encoding_method)
         return repr_str

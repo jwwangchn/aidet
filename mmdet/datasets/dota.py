@@ -77,6 +77,7 @@ class DOTADataset(CocoDataset):
         gt_labels = []
         gt_bboxes_ignore = []
         gt_masks_ann = []
+        gt_rbboxes = []
 
         for i, ann in enumerate(ann_info):
             if ann.get('ignore', False):
@@ -91,6 +92,7 @@ class DOTADataset(CocoDataset):
                 gt_bboxes.append(bbox)
                 gt_labels.append(self.cat2label[ann['category_id']])
                 gt_masks_ann.append(ann['pointobb'])
+                gt_rbboxes.append(ann['pointobb'])
 
         if gt_bboxes:
             gt_bboxes = np.array(gt_bboxes, dtype=np.float32)
@@ -104,6 +106,11 @@ class DOTADataset(CocoDataset):
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
+        if gt_rbboxes:
+            gt_rbboxes = np.array(gt_rbboxes, dtype=np.float32)
+        else:
+            gt_rbboxes = np.zeros((0, 4), dtype=np.float32)
+
         seg_map = img_info['filename'].replace('jpg', 'png')
 
         ann = dict(
@@ -111,7 +118,8 @@ class DOTADataset(CocoDataset):
             labels=gt_labels,
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
-            seg_map=seg_map)
+            seg_map=seg_map,
+            rbboxes=gt_rbboxes)
 
         return ann
 

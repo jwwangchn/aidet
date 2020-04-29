@@ -85,6 +85,7 @@ class LoadAnnotations(object):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
+                 with_rbbox=False,
                  poly2mask=True,
                  poly2centermap=False,
                  centermap_encode='centerness',
@@ -94,6 +95,7 @@ class LoadAnnotations(object):
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
+        self.with_rbbox = with_rbbox
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
         self.centermap_encode = centermap_encode
@@ -163,6 +165,12 @@ class LoadAnnotations(object):
         results['seg_fields'].append('gt_semantic_seg')
         return results
 
+    def _load_rbboxes(self, results):
+        ann_info = results['ann_info']
+        results['gt_rbboxes'] = ann_info['rbboxes']
+        results['rbbox_fields'].append('gt_rbboxes')
+        return results
+
     def __call__(self, results):
         if self.with_bbox:
             results = self._load_bboxes(results)
@@ -174,6 +182,8 @@ class LoadAnnotations(object):
             results = self._load_masks(results)
         if self.with_seg:
             results = self._load_semantic_seg(results)
+        if self.with_rbbox:
+            results = self._load_rbboxes(results)
         return results
 
     def __repr__(self):
