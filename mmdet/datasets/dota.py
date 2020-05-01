@@ -229,6 +229,7 @@ class DOTADataset(CocoDataset):
         
     def evaluate(self,
                  results,
+                 jsonfile_prefix=None,
                  metric=['hbb', 'obb'],
                  submit_path='./results/dota/common_submit',
                  annopath='./data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt',
@@ -242,6 +243,8 @@ class DOTADataset(CocoDataset):
 
         # convert results to txt file and save file (DOTA format)
         self.results2txt(results, submit_path, logger)
+
+        self.format_results(results, jsonfile_prefix)
 
         # evaluating tasks of DOTA
         two_task_aps = []
