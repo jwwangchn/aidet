@@ -171,14 +171,14 @@ class DOTADataset(CocoDataset):
         # 3. generate subimage results
         print_log("\nStart write results to txt", logger=logger)
         for task in ['hbb', 'obb']:
-            self.format_results(submit_path, filenames, bboxes[task], scores, labels, task)
+            self.format_dota_results(submit_path, filenames, bboxes[task], scores, labels, task)
 
         # 4. generate original image results
         print_log("\nStart merge txt file", logger=logger)
         for task in ['hbb', 'obb']:
             self.merge_txt(submit_path, task)
 
-    def format_results(self, 
+    def format_dota_results(self, 
                        submit_path, 
                        filenames, 
                        bboxes, 
