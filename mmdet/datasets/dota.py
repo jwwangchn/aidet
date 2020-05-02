@@ -229,13 +229,13 @@ class DOTADataset(CocoDataset):
         
     def evaluate(self,
                  results,
-                 jsonfile_prefix=None,
                  metric=['hbb', 'obb'],
                  submit_path='./results/dota/common_submit',
                  annopath='./data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt',
                  imageset_file='./data/dota/v0/evaluation_sample/testset.txt',
                  logger=None,
-                 excel=None):
+                 excel=None,
+                 jsonfile_prefix=None):
         tasks = metric
         mmcv.mkdir_or_exist(submit_path)
         filename_prefix = {'hbb': "/Task2_{:s}.txt",
@@ -243,8 +243,6 @@ class DOTADataset(CocoDataset):
 
         # convert results to txt file and save file (DOTA format)
         self.results2txt(results, submit_path, logger)
-
-        self.format_results(results, jsonfile_prefix)
 
         # evaluating tasks of DOTA
         two_task_aps = []
@@ -266,6 +264,8 @@ class DOTADataset(CocoDataset):
         worksheet = writer.sheets['Sheet1']
         worksheet.set_column("B:R", 12)
         writer.save()
+
+        self.format_results(results, jsonfile_prefix)
 
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
