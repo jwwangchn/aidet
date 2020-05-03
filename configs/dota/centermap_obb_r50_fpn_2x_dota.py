@@ -165,7 +165,7 @@ data = dict(
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
-                  eval=['hbb', 'obb'], 
+                  metric=['hbb', 'obb'], 
                   submit_path='./results/dota/centermap_obb_r50_fpn_2x_dota', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
