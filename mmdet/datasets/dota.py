@@ -257,6 +257,11 @@ class DOTADataset(CocoDataset):
             class_AP['mAP'] = mean_AP
             two_task_aps.append(class_AP)
 
+        eval_results = {**two_task_aps[0], **two_task_aps[1]}
+        for key, value in eval_results.items():
+            if key in two_task_aps[0] and key in two_task_aps[1]:
+                eval_results[key] = [value , two_task_aps[0][key]]
+
         df = pd.DataFrame(data=two_task_aps)
         writer = pd.ExcelWriter(excel, engine='xlsxwriter')
         df=df.style.set_properties(**{'text-align': 'center'})
@@ -267,6 +272,7 @@ class DOTADataset(CocoDataset):
 
         self.format_results(results, jsonfile_prefix)
 
+        return eval_results
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
         # mean_metrics = [mean ap, mean precision, mean reccall]
