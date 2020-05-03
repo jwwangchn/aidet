@@ -164,7 +164,7 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['bbox', 'segm'])
+evaluation = dict(interval=2, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -174,7 +174,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    step=[32, 44])
+    step=[16, 22])
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
@@ -185,10 +185,10 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 48
+total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/centermap_obb_r50_fpn_4x_dota'
+work_dir = './work_dirs/centermap_obb_r50_fpn_2x_dota'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_4x_dota'
-epoch=48
+model='centermap_obb_r50_fpn_2x_dota'
+epoch=24
 dataset='dota'
 
 #------------------------------train-----------------------------------
@@ -17,6 +17,10 @@ then
     echo "==== start debug training ===="
     export CUDA_VISIBLE_DEVICES=0
     python tools/train.py configs/${dataset}/${model}.py --gpus 1
+elif [ $1 == 3 ]
+then
+    echo "==== start training + validation ===="
+    ./tools/dist_train.sh configs/${dataset}/${model}.py 4 --validate
 elif [ $1 == 0 ]
 then
     # skip training
