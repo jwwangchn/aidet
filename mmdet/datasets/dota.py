@@ -32,7 +32,9 @@ class DOTADataset(CocoDataset):
                  seg_prefix=None,
                  proposal_file=None,
                  test_mode=False,
-                 filter_empty_gt=True):
+                 filter_empty_gt=True,
+                 min_area=0,
+                 max_small_length=0):
         super(DOTADataset, self).__init__(ann_file,
                                           pipeline,
                                           data_root,
@@ -49,6 +51,8 @@ class DOTADataset(CocoDataset):
                                   "obb": 'merge_dota_obb'}
         self.txt_file_prefix = {"hbb": 'Task2',
                                 "obb": 'Task1'}
+        self.min_area = min_area
+        self.max_small_length = max_small_length
 
     def _filter_imgs(self, min_size=32):
         """Filter images too small or without ground truths."""
@@ -82,7 +86,7 @@ class DOTADataset(CocoDataset):
             if ann.get('ignore', False):
                 continue
             x1, y1, w, h = ann['bbox']
-            if ann['area'] <= 0 or w < 1 or h < 1:
+            if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
                 continue
             bbox = [x1, y1, x1 + w - 1, y1 + h - 1]
             if ann.get('iscrowd', False):
@@ -230,7 +234,8 @@ class DOTADataset(CocoDataset):
                  annopath='./data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt',
                  imageset_file='./data/dota/v0/evaluation_sample/testset.txt',
                  logger=None,
-                 excel=None):
+                 excel=None,
+                 jsonfile_prefix=None):
         tasks = metric
         mmcv.mkdir_or_exist(submit_path)
         filename_prefix = {'hbb': "/Task2_{:s}.txt",
@@ -259,6 +264,8 @@ class DOTADataset(CocoDataset):
         worksheet = writer.sheets['Sheet1']
         worksheet.set_column("B:R", 12)
         writer.save()
+
+        self.format_results(results, jsonfile_prefix)
 
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
