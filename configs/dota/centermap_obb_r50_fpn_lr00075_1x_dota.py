@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='MaskRCNN',
+    type='CenterMapOBB',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -51,13 +51,13 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
-        type='FCNMaskHead',
-        num_convs=4,
+        type='CenterMapHead',
+        num_convs=10,
         in_channels=256,
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
+            type='CenterMapLoss', use_mask=True, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -108,7 +108,7 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        score_thr=0.001,
+        score_thr=0.05,
         nms=dict(type='nms', iou_thr=0.5),
         max_per_img=1000,
         mask_thr_binary=0.5))
@@ -123,7 +123,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True, poly2mask=False, poly2centermap=True, centermap_encode='centerness', centermap_rate=0.5, centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -164,9 +164,15 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['bbox', 'segm'])
+evaluation = dict(interval=2, 
+                  metric=['hbb', 'obb'], 
+                  submit_path='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota', 
+                  annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
+                  imageset_file='./data/dota/v0/test/testset.txt', 
+                  excel='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota/centermap_obb_r50_fpn_lr00075_1x_dota.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota')
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.0075, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -188,7 +194,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/mask_rcnn_r50_fpn_1x_dota'
+work_dir = './work_dirs/centermap_obb_r50_fpn_lr00075_1x_dota'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

@@ -13,6 +13,7 @@ from mmdet.utils import print_log
 from .coco import CocoDataset
 from .registry import DATASETS
 
+import wwtool
 from wwtool import segm2rbbox
 from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
 
@@ -133,8 +134,13 @@ class DOTADataset(CocoDataset):
             No
         """
         # 1. convert pkl to dict
+        if type(results) == str:
+            # loading results from pkl file
+            results = mmcv.load(results)
+
         hbb_obb_results = []
         prog_bar = mmcv.ProgressBar(len(self))
+
         for idx in range(len(self)):
             det, seg = results[idx]
             img_id = self.img_ids[idx]
@@ -143,22 +149,20 @@ class DOTADataset(CocoDataset):
             # bboxes shape = [15, N], per-class
             for label in range(len(det)):
                 bboxes, segms = det[label], seg[label]
-
-                instance_num = bboxes.shape[0]
-                for idx in range(instance_num):
-                    score = float(bboxes[idx][4])
-                    if score < 0.01:
-                        continue
+                for idx, (bbox, segm) in enumerate(zip(bboxes, segms)):
+                    
                     data = dict()
+                    score = float(bbox[4])
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
                     data['category_id'] = self.cat_ids[label]
-                    data['bbox'] = bboxes[idx][:-1].tolist()
-                    segms[idx]['counts'] = segms[idx]['counts'].decode()
-                    data['segmentation'] = segms[idx]
-                    data['thetaobb'], data['rbbox'] = segm2rbbox(segms[idx])
+                    data['bbox'] = bbox[:-1].tolist()
+                    segm['counts'] = segm['counts'].decode()
+                    data['segmentation'] = segm
+                    data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
                     hbb_obb_results.append(data)
+                
             prog_bar.update()
 
         # 2. convert dict to list
@@ -270,6 +274,9 @@ class DOTADataset(CocoDataset):
         worksheet.set_column("B:R", 12)
         writer.save()
 
+        if type(results) == str:
+            # loading results from pkl file
+            results = mmcv.load(results)
         self.format_results(results, jsonfile_prefix)
 
         return eval_results
