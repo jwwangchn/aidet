@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_2x_dota'
-epoch=24
+model='centermap_obb_r50_fpn_lr00075_1x_dota'
+epoch=12
 dataset='dota'
 
 #------------------------------train-----------------------------------
