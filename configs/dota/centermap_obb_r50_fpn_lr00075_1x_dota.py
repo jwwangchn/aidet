@@ -156,7 +156,7 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
+        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline),
     test=dict(
@@ -164,7 +164,7 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, 
+evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
                   submit_path='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
