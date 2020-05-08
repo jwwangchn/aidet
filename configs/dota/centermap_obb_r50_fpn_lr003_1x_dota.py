@@ -1,5 +1,3 @@
-model_name = 'centermap_obb_r50_fpn_lr003_1x_dota'
-
 # model settings
 model = dict(
     type='CenterMapOBB',
@@ -168,11 +166,11 @@ data = dict(
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
-                  submit_path='./results/dota/{}'.format(model_name), 
+                  submit_path='./results/dota/centermap_obb_r50_fpn_lr003_1x_dota', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/{}/{}.xlsx'.format(model_name, model_name), 
-                  jsonfile_prefix='./results/dota/{}'.format(model_name))
+                  excel='./results/dota/centermap_obb_r50_fpn_lr003_1x_dota/centermap_obb_r50_fpn_lr003_1x_dota.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr003_1x_dota')
 # optimizer
 optimizer = dict(type='SGD', lr=0.03, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -196,7 +194,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/{}'.format(model_name)
+work_dir = './work_dirs/centermap_obb_r50_fpn_lr003_1x_dota'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
