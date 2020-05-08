@@ -171,7 +171,7 @@ evaluation = dict(interval=2,
                   submit_path='./results/dota/{}'.format(model_name), 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/{}/{}.xlsx'.format(model_name), 
+                  excel='./results/dota/{}/{}.xlsx'.format(model_name, model_name), 
                   jsonfile_prefix='./results/dota/{}'.format(model_name))
 # optimizer
 optimizer = dict(type='SGD', lr=0.03, momentum=0.9, weight_decay=0.0001)
