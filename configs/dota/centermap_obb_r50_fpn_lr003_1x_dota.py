@@ -1,4 +1,5 @@
-model_name = 'centermap_obb_r50_fpn_lr003_1x_dota'
+from pathlib import Path
+model_name = Path(__file__).name
 
 # model settings
 model = dict(
