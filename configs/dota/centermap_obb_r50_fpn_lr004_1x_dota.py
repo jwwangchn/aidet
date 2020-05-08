@@ -169,7 +169,7 @@ evaluation = dict(interval=2,
                   submit_path='./results/dota/centermap_obb_r50_fpn_lr004_1x_dota', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/centermap_obb_r50_fpn_lr003_1x_dota/centermap_obb_r50_fpn_lr004_1x_dota.xlsx', 
+                  excel='./results/dota/centermap_obb_r50_fpn_lr004_1x_dota/centermap_obb_r50_fpn_lr004_1x_dota.xlsx', 
                   jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr004_1x_dota')
 # optimizer
 optimizer = dict(type='SGD', lr=0.04, momentum=0.9, weight_decay=0.0001)
@@ -196,5 +196,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/centermap_obb_r50_fpn_lr004_1x_dota'
 load_from = None
-resume_from = None
+resume_from = './work_dirs/centermap_obb_r50_fpn_lr004_1x_dota/epoch_2.pth'
 workflow = [('train', 1)]
