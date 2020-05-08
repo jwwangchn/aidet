@@ -166,11 +166,11 @@ data = dict(
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
-                  submit_path='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota', 
+                  submit_path='./results/dota/centermap_obb_r50_fpn_lr0005_1x_dota', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota/centermap_obb_r50_fpn_lr00075_1x_dota.xlsx', 
-                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr00075_1x_dota')
+                  excel='./results/dota/centermap_obb_r50_fpn_lr0005_1x_dota/centermap_obb_r50_fpn_lr0005_1x_dota.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr0005_1x_dota')
 # optimizer
 optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
