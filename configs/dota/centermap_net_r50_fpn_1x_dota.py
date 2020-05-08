@@ -188,7 +188,7 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
+        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline),
     test=dict(
@@ -196,7 +196,13 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['bbox', 'segm'])
+evaluation = dict(interval=2, 
+                  metric=['hbb', 'obb'], 
+                  submit_path='./results/dota/centermap_net_r50_fpn_1x_dota', 
+                  annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
+                  imageset_file='./data/dota/v0/test/testset.txt', 
+                  excel='./results/dota/centermap_net_r50_fpn_1x_dota/centermap_net_r50_fpn_1x_dota.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_net_r50_fpn_1x_dota')
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
