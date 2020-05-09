@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
+from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler, bbox_mapping, merge_aug_bboxes, multiclass_nms, merge_aug_masks
 from .. import builder
 from ..registry import DETECTORS
 from .two_stage import TwoStageDetector
@@ -259,12 +259,14 @@ class CenterMapOBB(TwoStageDetector):
         mask_rois = bbox2roi([bboxes])
         mask_feats = self.mask_roi_extractor(
             x[:len(self.mask_roi_extractor.featmap_strides)], mask_rois)
+        
         if self.with_semantic and 'mask' in self.semantic_fusion:
             mask_semantic_feat = self.semantic_roi_extractor([semantic_feat],
                                                              mask_rois)
             if mask_semantic_feat.shape[-2:] != mask_feats.shape[-2:]:
                 mask_semantic_feat = F.adaptive_avg_pool2d(
                     mask_semantic_feat, mask_feats.shape[-2:])
+            
             if self.fusion_operation == 'attention':
                 mask_semantic_feat = self.conv_attention1(mask_semantic_feat)
                 mask_semantic_feat = torch.relu(mask_semantic_feat)
@@ -275,6 +277,7 @@ class CenterMapOBB(TwoStageDetector):
                 mask_feats += mask_semantic_feat
             elif self.fusion_operation == 'mul':
                 mask_feats *= mask_semantic_feat
+
             mask_pred = self.mask_head(mask_feats)
         return mask_pred
 
@@ -324,24 +327,8 @@ class CenterMapOBB(TwoStageDetector):
                     det_bboxes[:, :4] *
                     scale_factor if rescale else det_bboxes)
 
-                mask_rois = bbox2roi([_bboxes])
-                mask_feats = self.mask_roi_extractor(
-                    x[:len(self.mask_roi_extractor.featmap_strides)], mask_rois)
-                if self.with_semantic and 'mask' in self.semantic_fusion:
-                    mask_semantic_feat = self.semantic_roi_extractor(
-                        [semantic_feat], mask_rois)
-                    if self.fusion_operation == 'attention':
-                        mask_semantic_feat = self.conv_attention1(mask_semantic_feat)
-                        mask_semantic_feat = torch.relu(mask_semantic_feat)
-                        mask_semantic_feat = self.conv_attention2(mask_semantic_feat)
-                        mask_semantic_feat = torch.sigmoid(mask_semantic_feat)
-                        mask_feats = mask_feats * mask_semantic_feat + mask_feats
-                    elif self.fusion_operation == 'add':
-                        mask_feats += mask_semantic_feat
-                    elif self.fusion_operation == 'mul':
-                        mask_feats *= mask_semantic_feat
+                mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic_feat)
 
-                mask_pred = self.mask_head(mask_feats)
                 segm_result = self.mask_head.get_seg_masks(
                     mask_pred, _bboxes, det_labels, rcnn_test_cfg,
                     ori_shape, scale_factor, rescale)
@@ -351,4 +338,93 @@ class CenterMapOBB(TwoStageDetector):
         return bbox_result, segm_result
 
     def aug_test(self, imgs, img_metas, proposals=None, rescale=False):
-        pass
+        if self.with_semantic:
+            semantic_feats = [
+                self.semantic_head(feat)[1]
+                for feat in self.extract_feats(imgs)
+            ]
+        else:
+            semantic_feats = [None] * len(img_metas)
+
+        # recompute feats to save memory
+        proposal_list = self.aug_test_rpn(
+            self.extract_feats(imgs), img_metas, self.test_cfg.rpn)
+
+        rcnn_test_cfg = self.test_cfg.rcnn
+        aug_bboxes = []
+        aug_scores = []
+        for x, img_meta, semantic in zip(
+                self.extract_feats(imgs), img_metas, semantic_feats):
+            # only one image in the batch
+            img_shape = img_meta[0]['img_shape']
+            scale_factor = img_meta[0]['scale_factor']
+            flip = img_meta[0]['flip']
+
+            proposals = bbox_mapping(proposal_list[0][:, :4], img_shape,
+                                     scale_factor, flip)
+
+            rois = bbox2roi([proposals])
+            cls_score, bbox_pred = self._bbox_forward_test(
+                x, rois, semantic_feat=semantic)
+
+            bbox_label = cls_score.argmax(dim=1)
+            rois = self.bbox_head.regress_by_class(rois, bbox_label,
+                                                bbox_pred, img_meta[0])
+
+            bboxes, scores = self.bbox_head.get_det_bboxes(
+                rois,
+                cls_score,
+                bbox_pred,
+                img_shape,
+                scale_factor,
+                rescale=False,
+                cfg=None)
+            aug_bboxes.append(bboxes)
+            aug_scores.append(scores)
+
+        # after merging, bboxes will be rescaled to the original image size
+        merged_bboxes, merged_scores = merge_aug_bboxes(
+            aug_bboxes, aug_scores, img_metas, rcnn_test_cfg)
+        det_bboxes, det_labels = multiclass_nms(merged_bboxes, merged_scores,
+                                                rcnn_test_cfg.score_thr,
+                                                rcnn_test_cfg.nms,
+                                                rcnn_test_cfg.max_per_img)
+
+        bbox_result = bbox2result(det_bboxes, det_labels,
+                                  self.bbox_head.num_classes)
+
+        if self.with_mask:
+            if det_bboxes.shape[0] == 0:
+                segm_result = [[]
+                               for _ in range(self.mask_head.num_classes -
+                                              1)]
+            else:
+                aug_masks = []
+                aug_img_metas = []
+                for x, img_meta, semantic in zip(
+                        self.extract_feats(imgs), img_metas, semantic_feats):
+                    img_shape = img_meta[0]['img_shape']
+                    scale_factor = img_meta[0]['scale_factor']
+                    flip = img_meta[0]['flip']
+                    _bboxes = bbox_mapping(det_bboxes[:, :4], img_shape,
+                                           scale_factor, flip)
+                    mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic_feat)
+                    aug_masks.append(mask_pred.sigmoid().cpu().numpy())
+                    aug_img_metas.append(img_meta)
+
+                merged_masks = merge_aug_masks(aug_masks, aug_img_metas,
+                                               self.test_cfg.rcnn)
+
+                ori_shape = img_metas[0][0]['ori_shape']
+                segm_result = self.mask_head.get_seg_masks(
+                    merged_masks,
+                    det_bboxes,
+                    det_labels,
+                    rcnn_test_cfg,
+                    ori_shape,
+                    scale_factor=1.0,
+                    rescale=False)
+        else:
+            return bbox_result
+        
+        return bbox_result, segm_result
