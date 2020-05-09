@@ -1,6 +1,6 @@
 #!/bin/bash
-#------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_lr004_1x_dota'
+#------------------------------config-----------------------------------=
+model='centermap_net_r50_fpn_1x_dota'
 epoch=12
 dataset='dota'
 

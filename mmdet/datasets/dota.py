@@ -31,6 +31,7 @@ class DOTADataset(CocoDataset):
                  data_root=None,
                  img_prefix='',
                  seg_prefix=None,
+                 heatmap_weight_prefix=None,
                  proposal_file=None,
                  test_mode=False,
                  filter_empty_gt=True,
@@ -52,8 +53,19 @@ class DOTADataset(CocoDataset):
                                   "obb": 'merge_dota_obb'}
         self.txt_file_prefix = {"hbb": 'Task2',
                                 "obb": 'Task1'}
+        self.heatmap_weight_prefix = heatmap_weight_prefix
         self.min_area = min_area
         self.max_small_length = max_small_length
+
+        # join paths if data_root is specified
+        if self.data_root is not None:
+            if not (self.heatmap_weight_prefix is None or osp.isabs(self.heatmap_weight_prefix)):
+                self.heatmap_weight_prefix = osp.join(self.data_root, self.heatmap_weight_prefix)
+
+    def pre_pipeline(self, results):
+        super(DOTADataset, self).pre_pipeline(results)
+        if self.heatmap_weight_prefix:
+            results['heatmap_weight_prefix'] = self.heatmap_weight_prefix
 
     def _filter_imgs(self, min_size=32):
         """Filter images too small or without ground truths."""
@@ -110,13 +122,15 @@ class DOTADataset(CocoDataset):
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
         seg_map = img_info['filename'].replace('jpg', 'png')
+        heatmap_weight = img_info['filename'].replace('jpg', 'png')
 
         ann = dict(
             bboxes=gt_bboxes,
             labels=gt_labels,
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
-            seg_map=seg_map)
+            seg_map=seg_map,
+            heatmap_weight=heatmap_weight)
 
         return ann
 
