@@ -278,7 +278,7 @@ class CenterMapOBB(TwoStageDetector):
             elif self.fusion_operation == 'mul':
                 mask_feats *= mask_semantic_feat
 
-            mask_pred = self.mask_head(mask_feats)
+        mask_pred = self.mask_head(mask_feats)
         return mask_pred
 
     def simple_test(self, img, img_metas, proposals=None, rescale=False):
