@@ -1,5 +1,3 @@
-norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
-
 # model settings
 model = dict(
     type='CenterMapOBB',
@@ -59,25 +57,7 @@ model = dict(
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask=True, loss_weight=3.0)),
-    semantic_roi_extractor=dict(
-        type='SingleRoIExtractor',
-        roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
-        out_channels=256,
-        featmap_strides=[2]),
-    semantic_head=dict(
-        type='WeightedPseudoSegmentationHead',
-        num_convs=1,
-        in_channels=256,
-        inside_channels=128,
-        conv_out_channels=256,
-        num_classes=16,
-        ignore_label=255,
-        loss_weight=1.0,
-        use_focal_loss=True,
-        with_background_reweight=True,
-        reweight_version='v1',
-        norm_cfg=norm_cfg))
+            type='CenterMapLoss', use_mask=True, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -135,7 +115,7 @@ test_cfg = dict(
 # dataset settings
 dataset_type = 'DOTADataset'
 dota_version = 'v1.0'
-dataset_version = 'v1'
+dataset_version = 'DJ'
 train_rate = '1.0'                  # 1.0_0.5 or 1.0
 val_rate = '1.0'                    # 1.0_0.5 or 1.0
 data_root = './data/dota/{}/coco/'.format(dataset_version)
@@ -143,23 +123,13 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', 
-         with_bbox=True, 
-         with_mask=True, 
-         with_seg=True, 
-         with_heatmap_weight=True, 
-         poly2mask=False, 
-         poly2centermap=True, 
-         centermap_encode='centerness', 
-         centermap_rate=0.5, 
-         centermap_factor=4),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True, poly2mask=False, poly2centermap=True, centermap_encode='centerness', centermap_rate=0.5, centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
-    dict(type='SegRescale', scale_factor=1 / 2),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -181,30 +151,28 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_trainval_{}_{}_best_keypoint.json'.format(dataset_version, train_rate),
+        ann_file=data_root + 'annotations/dota_trainval_{}_best.json'.format(dataset_version),
         img_prefix=data_root + 'trainval/',
-        seg_prefix=data_root + 'pseudo_segmentation/',
-        heatmap_weight_prefix=data_root + 'heatmap_weight/',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
+        ann_file=data_root + 'annotations/dota_test_{}_best_no_ground_truth.json'.format(dataset_version),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
+        ann_file=data_root + 'annotations/dota_test_{}_best_no_ground_truth.json'.format(dataset_version),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
-                  submit_path='./results/dota/centermap_net_r50_fpn_1x_dota', 
+                  submit_path='./results/dota/centermap_obb_r50_fpn_lr002_1x_dota_DJ', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/centermap_net_r50_fpn_1x_dota/centermap_net_r50_fpn_1x_dota.xlsx', 
-                  jsonfile_prefix='./results/dota/centermap_net_r50_fpn_1x_dota')
+                  excel='./results/dota/centermap_obb_r50_fpn_lr002_1x_dota_DJ/centermap_obb_r50_fpn_lr002_1x_dota_DJ.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_lr002_1x_dota_DJ')
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -226,7 +194,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/centermap_net_r50_fpn_1x_dota'
+work_dir = './work_dirs/centermap_obb_r50_fpn_lr002_1x_dota_DJ'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
