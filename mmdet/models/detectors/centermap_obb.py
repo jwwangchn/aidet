@@ -232,3 +232,123 @@ class CenterMapOBB(TwoStageDetector):
                 losses.update(loss_mask)
 
         return losses
+
+    def _bbox_forward_test(self, x, rois, semantic_feat=None):
+        bbox_feats = self.bbox_roi_extractor(
+            x[:len(self.bbox_roi_extractor.featmap_strides)], rois)
+        if self.with_semantic and 'bbox' in self.semantic_fusion:
+            bbox_semantic_feat = self.semantic_roi_extractor([semantic_feat],
+                                                             rois)
+            if bbox_semantic_feat.shape[-2:] != bbox_feats.shape[-2:]:
+                bbox_semantic_feat = F.adaptive_avg_pool2d(
+                    bbox_semantic_feat, bbox_feats.shape[-2:])
+            if self.fusion_operation == 'attention':
+                bbox_semantic_feat = self.conv_attention1(bbox_semantic_feat)
+                bbox_semantic_feat = torch.relu(bbox_semantic_feat)
+                bbox_semantic_feat = self.conv_attention2(bbox_semantic_feat)
+                bbox_semantic_feat = torch.sigmoid(bbox_semantic_feat)
+                bbox_feats = bbox_feats * bbox_semantic_feat + bbox_feats
+            elif self.fusion_operation == 'add':
+                bbox_feats += bbox_semantic_feat
+            elif self.fusion_operation == 'mul':
+                bbox_feats *= bbox_semantic_feat
+        cls_score, bbox_pred = self.bbox_head(bbox_feats)
+        return cls_score, bbox_pred
+
+    def _mask_forward_test(self, x, bboxes, semantic_feat=None):
+        mask_rois = bbox2roi([bboxes])
+        mask_feats = self.mask_roi_extractor(
+            x[:len(self.mask_roi_extractor.featmap_strides)], mask_rois)
+        if self.with_semantic and 'mask' in self.semantic_fusion:
+            mask_semantic_feat = self.semantic_roi_extractor([semantic_feat],
+                                                             mask_rois)
+            if mask_semantic_feat.shape[-2:] != mask_feats.shape[-2:]:
+                mask_semantic_feat = F.adaptive_avg_pool2d(
+                    mask_semantic_feat, mask_feats.shape[-2:])
+            if self.fusion_operation == 'attention':
+                mask_semantic_feat = self.conv_attention1(mask_semantic_feat)
+                mask_semantic_feat = torch.relu(mask_semantic_feat)
+                mask_semantic_feat = self.conv_attention2(mask_semantic_feat)
+                mask_semantic_feat = torch.sigmoid(mask_semantic_feat)
+                mask_feats = mask_feats * mask_semantic_feat + mask_feats
+            elif self.fusion_operation == 'add':
+                mask_feats += mask_semantic_feat
+            elif self.fusion_operation == 'mul':
+                mask_feats *= mask_semantic_feat
+            mask_pred = self.mask_head(mask_feats)
+        return mask_pred
+
+    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+        x = self.extract_feat(img)
+        proposal_list = self.simple_test_rpn(
+            x, img_metas,
+            self.test_cfg.rpn) if proposals is None else proposals
+
+        if self.with_semantic:
+            _, semantic_feat = self.semantic_head(x)
+        else:
+            semantic_feat = None
+
+        img_shape = img_metas[0]['img_shape']
+        ori_shape = img_metas[0]['ori_shape']
+        scale_factor = img_metas[0]['scale_factor']
+
+        rcnn_test_cfg = self.test_cfg.rcnn
+
+        rois = bbox2roi(proposal_list)
+
+        cls_score, bbox_pred = self._bbox_forward_test(
+            x, rois, semantic_feat=semantic_feat)
+            
+        bbox_label = cls_score.argmax(dim=1)
+        rois = self.bbox_head.regress_by_class(rois, bbox_label, bbox_pred,
+                                            img_metas[0])
+
+        det_bboxes, det_labels = self.bbox_head.get_det_bboxes(
+            rois,
+            cls_score,
+            bbox_pred,
+            img_shape,
+            scale_factor,
+            rescale=rescale,
+            cfg=rcnn_test_cfg)
+        bbox_result = bbox2result(det_bboxes, det_labels,
+                                  self.bbox_head.num_classes)
+
+        if self.with_mask:
+            if det_bboxes.shape[0] == 0:
+                mask_classes = self.mask_head.num_classes - 1
+                segm_result = [[] for _ in range(mask_classes)]
+            else:
+                _bboxes = (
+                    det_bboxes[:, :4] *
+                    scale_factor if rescale else det_bboxes)
+
+                mask_rois = bbox2roi([_bboxes])
+                mask_feats = self.mask_roi_extractor(
+                    x[:len(self.mask_roi_extractor.featmap_strides)], mask_rois)
+                if self.with_semantic and 'mask' in self.semantic_fusion:
+                    mask_semantic_feat = self.semantic_roi_extractor(
+                        [semantic_feat], mask_rois)
+                    if self.fusion_operation == 'attention':
+                        mask_semantic_feat = self.conv_attention1(mask_semantic_feat)
+                        mask_semantic_feat = torch.relu(mask_semantic_feat)
+                        mask_semantic_feat = self.conv_attention2(mask_semantic_feat)
+                        mask_semantic_feat = torch.sigmoid(mask_semantic_feat)
+                        mask_feats = mask_feats * mask_semantic_feat + mask_feats
+                    elif self.fusion_operation == 'add':
+                        mask_feats += mask_semantic_feat
+                    elif self.fusion_operation == 'mul':
+                        mask_feats *= mask_semantic_feat
+
+                mask_pred = self.mask_head(mask_feats)
+                segm_result = self.mask_head.get_seg_masks(
+                    mask_pred, _bboxes, det_labels, rcnn_test_cfg,
+                    ori_shape, scale_factor, rescale)
+        else:
+            return bbox_result
+
+        return bbox_result, segm_result
+
+    def aug_test(self, imgs, img_metas, proposals=None, rescale=False):
+        pass
