@@ -91,6 +91,7 @@ class LoadAnnotations(object):
                  centermap_encode='centerness',
                  centermap_rate=0.5,
                  centermap_factor=2,
+                 anchor_centermap_scale=512,
                  show=False):
         self.with_bbox = with_bbox
         self.with_label = with_label
@@ -100,8 +101,8 @@ class LoadAnnotations(object):
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
         self.centermap_encode = centermap_encode
-        self.centerness_image = wwtool.generate_centerness_image(height=512, 
-                                                                 width=512, 
+        self.centerness_image = wwtool.generate_centerness_image(height=anchor_centermap_scale, 
+                                                                 width=anchor_centermap_scale, 
                                                                  factor=centermap_factor,
                                                                  threshold = int(centermap_rate * 255))
         self.anchor_centermaps = {'centerness': self.centerness_image,

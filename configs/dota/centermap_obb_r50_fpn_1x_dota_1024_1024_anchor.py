@@ -131,7 +131,7 @@ train_pipeline = [
         centermap_encode='centerness', 
         centermap_rate=0.5, 
         centermap_factor=4,
-        show=False),
+        anchor_centermap_scale=1024),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -196,7 +196,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/centermap_obb_tgrs'
+work_dir = './work_dirs/centermap_obb_r50_fpn_1x_dota_1024_1024_anchor'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
