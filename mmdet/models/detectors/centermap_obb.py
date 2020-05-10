@@ -321,11 +321,18 @@ class CenterMapOBB(TwoStageDetector):
         bbox_result = bbox2result(det_bboxes, det_labels,
                                   self.bbox_head.num_classes)
 
-        if self.with_mask:
+        if not self.with_mask:
+            return bbox_result
+        else:
             if det_bboxes.shape[0] == 0:
                 mask_classes = self.mask_head.num_classes - 1
                 segm_result = [[] for _ in range(mask_classes)]
             else:
+                # if det_bboxes is rescaled to the original image size, we need to
+                # rescale it back to the testing scale to obtain RoIs.
+                if rescale and not isinstance(scale_factor, float):
+                    scale_factor = torch.from_numpy(scale_factor).to(
+                        det_bboxes.device)
                 _bboxes = (
                     det_bboxes[:, :4] *
                     scale_factor if rescale else det_bboxes)
@@ -333,12 +340,15 @@ class CenterMapOBB(TwoStageDetector):
                 mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic_feat)
 
                 segm_result = self.mask_head.get_seg_masks(
-                    mask_pred, _bboxes, det_labels, rcnn_test_cfg,
-                    ori_shape, scale_factor, rescale)
-        else:
-            return bbox_result
-
-        return bbox_result, segm_result
+                    mask_pred, 
+                    _bboxes, 
+                    det_labels, 
+                    rcnn_test_cfg,
+                    ori_shape, 
+                    scale_factor, 
+                    rescale)
+            
+            return bbox_result, segm_result
 
     def aug_test(self, imgs, img_metas, proposals=None, rescale=False):
         if self.with_semantic:
