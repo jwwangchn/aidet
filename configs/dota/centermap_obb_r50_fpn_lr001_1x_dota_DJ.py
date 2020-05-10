@@ -200,5 +200,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/centermap_obb_r50_fpn_lr001_1x_dota_DJ'
 load_from = None
-resume_from = None
+resume_from = './work_dirs/centermap_obb_r50_fpn_lr001_1x_dota_DJ/epoch_2.pth'
 workflow = [('train', 1)]
