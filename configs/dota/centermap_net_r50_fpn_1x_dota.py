@@ -64,7 +64,7 @@ model = dict(
         type='SingleRoIExtractor',
         roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
         out_channels=256,
-        featmap_strides=[2]),
+        featmap_strides=[4]),
     semantic_head=dict(
         type='WeightedPseudoSegmentationHead',
         num_convs=1,
@@ -157,7 +157,7 @@ train_pipeline = [
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
-    dict(type='SegRescale', scale_factor=1 / 2),
+    dict(type='SegRescale', scale_factor=1 / 4),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight']),
 ]
