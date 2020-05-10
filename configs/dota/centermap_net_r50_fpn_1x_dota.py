@@ -64,7 +64,7 @@ model = dict(
         type='SingleRoIExtractor',
         roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
         out_channels=256,
-        featmap_strides=[4]),
+        featmap_strides=[2]),
     semantic_head=dict(
         type='WeightedPseudoSegmentationHead',
         num_convs=1,
@@ -157,7 +157,7 @@ train_pipeline = [
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
-    dict(type='SegRescale', scale_factor=1 / 4),
+    dict(type='SegRescale', scale_factor=1 / 2),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight']),
 ]
@@ -204,7 +204,7 @@ evaluation = dict(interval=2,
                   excel='./results/dota/centermap_net_r50_fpn_1x_dota/centermap_net_r50_fpn_1x_dota.xlsx', 
                   jsonfile_prefix='./results/dota/centermap_net_r50_fpn_1x_dota')
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(

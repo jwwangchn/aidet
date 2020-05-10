@@ -90,7 +90,8 @@ class LoadAnnotations(object):
                  poly2centermap=False,
                  centermap_encode='centerness',
                  centermap_rate=0.5,
-                 centermap_factor=2):
+                 centermap_factor=2,
+                 show=False):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
@@ -106,6 +107,7 @@ class LoadAnnotations(object):
         self.anchor_centermaps = {'centerness': self.centerness_image,
                                   'gaussian': None,
                                   'ellipse': None}
+        self.show = show
 
     def _load_bboxes(self, results):
         ann_info = results['ann_info']
@@ -153,8 +155,14 @@ class LoadAnnotations(object):
         if self.poly2mask:
             gt_masks = [self._poly2mask(mask, h, w) for mask in gt_masks]
         elif self.poly2centermap:
-            gt_masks = [self._poly2centermap(mask, h, w) for mask in gt_masks]
+            gt_masks = [self._poly2centermap(mask[0], h, w) for mask in gt_masks]
         results['gt_masks'] = gt_masks
+
+        # visualization
+        if self.show:
+            for gt_mask in gt_masks:
+                wwtool.show_grayscale_as_heatmap(gt_mask)
+
         results['mask_fields'].append('gt_masks')
         return results
 
