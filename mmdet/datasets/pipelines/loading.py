@@ -155,7 +155,7 @@ class LoadAnnotations(object):
         if self.poly2mask:
             gt_masks = [self._poly2mask(mask, h, w) for mask in gt_masks]
         elif self.poly2centermap:
-            gt_masks = [self._poly2centermap(mask, h, w) for mask in gt_masks]
+            gt_masks = [self._poly2centermap(mask[0], h, w) for mask in gt_masks]
         results['gt_masks'] = gt_masks
 
         # visualization
