@@ -85,6 +85,7 @@ class LoadAnnotations(object):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
+                 with_heatmap_weight=False,
                  poly2mask=True,
                  poly2centermap=False,
                  centermap_encode='centerness',
@@ -94,6 +95,7 @@ class LoadAnnotations(object):
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
+        self.with_heatmap_weight = with_heatmap_weight
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
         self.centermap_encode = centermap_encode
@@ -160,7 +162,16 @@ class LoadAnnotations(object):
         results['gt_semantic_seg'] = mmcv.imread(
             osp.join(results['seg_prefix'], results['ann_info']['seg_map']),
             flag='unchanged').squeeze()
+        if results['gt_semantic_seg'].ndim == 3:
+            results['gt_semantic_seg'] = results['gt_semantic_seg'][:, :, 0]
         results['seg_fields'].append('gt_semantic_seg')
+        return results
+
+    def _load_heatmap_weight(self, results):
+        results['gt_heatmap_weight'] = mmcv.imread(
+            osp.join(results['heatmap_weight_prefix'], results['ann_info']['heatmap_weight']),
+            flag='unchanged').squeeze()
+        results['seg_fields'].append('gt_heatmap_weight')
         return results
 
     def __call__(self, results):
@@ -174,6 +185,8 @@ class LoadAnnotations(object):
             results = self._load_masks(results)
         if self.with_seg:
             results = self._load_semantic_seg(results)
+        if self.with_heatmap_weight:
+            results = self._load_heatmap_weight(results)
         return results
 
     def __repr__(self):
