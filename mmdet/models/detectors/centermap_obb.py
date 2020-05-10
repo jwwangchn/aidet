@@ -1,8 +1,15 @@
+import numpy as np
+import cv2
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler, bbox_mapping, merge_aug_bboxes, multiclass_nms, merge_aug_masks
+import mmcv
+import wwtool
+import pycocotools.mask as maskUtils
+
+from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler, bbox_mapping, merge_aug_bboxes, multiclass_nms, merge_aug_masks, get_classes, tensor2imgs
 from .. import builder
 from ..registry import DETECTORS
 from .two_stage import TwoStageDetector
@@ -302,10 +309,6 @@ class CenterMapOBB(TwoStageDetector):
 
         cls_score, bbox_pred = self._bbox_forward_test(
             x, rois, semantic_feat=semantic_feat)
-            
-        bbox_label = cls_score.argmax(dim=1)
-        rois = self.bbox_head.regress_by_class(rois, bbox_label, bbox_pred,
-                                            img_metas[0])
 
         det_bboxes, det_labels = self.bbox_head.get_det_bboxes(
             rois,
@@ -367,10 +370,6 @@ class CenterMapOBB(TwoStageDetector):
             cls_score, bbox_pred = self._bbox_forward_test(
                 x, rois, semantic_feat=semantic)
 
-            bbox_label = cls_score.argmax(dim=1)
-            rois = self.bbox_head.regress_by_class(rois, bbox_label,
-                                                bbox_pred, img_meta[0])
-
             bboxes, scores = self.bbox_head.get_det_bboxes(
                 rois,
                 cls_score,
@@ -408,7 +407,7 @@ class CenterMapOBB(TwoStageDetector):
                     flip = img_meta[0]['flip']
                     _bboxes = bbox_mapping(det_bboxes[:, :4], img_shape,
                                            scale_factor, flip)
-                    mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic_feat)
+                    mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic)
                     aug_masks.append(mask_pred.sigmoid().cpu().numpy())
                     aug_img_metas.append(img_meta)
 
@@ -428,3 +427,86 @@ class CenterMapOBB(TwoStageDetector):
             return bbox_result
         
         return bbox_result, segm_result
+    
+    def show_result(self, 
+                    data, 
+                    result, 
+                    dataset=None, 
+                    score_thr=0.3, 
+                    out_file=None,
+                    show_flag=None,
+                    thickness=2):
+        # RGB
+        DOTA_COLORS = {'harbor': (60, 180, 75), 'ship': (230, 25, 75), 'small-vehicle': (255, 225, 25), 'large-vehicle': (245, 130, 200), 
+        'storage-tank': (230, 190, 255), 'plane': (245, 130, 48), 'soccer-ball-field': (0, 0, 128), 'bridge': (255, 250, 200), 
+        'baseball-diamond': (240, 50, 230), 'tennis-court': (70, 240, 240), 'helicopter': (0, 130, 200), 'roundabout': (170, 255, 195), 
+        'swimming-pool': (250, 190, 190), 'ground-track-field': (170, 110, 40), 'basketball-court': (0, 128, 128)}
+        
+        if isinstance(result, tuple):
+            bbox_result, segm_result = result
+        else:
+            bbox_result, segm_result = result, None
+
+        if isinstance(data, dict):
+            img_tensor = data['img'][0]
+            img_metas = data['img_metas'][0].data[0]
+            imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+            assert len(imgs) == len(img_metas)
+        else:
+            imgs = [mmcv.imread(data)]
+            img_metas = [{'img_shape': imgs[0].shape}]
+
+        if dataset is None:
+            class_names = self.CLASSES
+        elif isinstance(dataset, str):
+            class_names = get_classes(dataset)
+        elif isinstance(dataset, (list, tuple)):
+            class_names = dataset
+        else:
+            raise TypeError(
+                'dataset must be a valid dataset name or a sequence'
+                ' of class names, not {}'.format(type(dataset)))
+        
+        for img, img_meta in zip(imgs, img_metas):
+            h, w, _ = img_meta['img_shape']
+            img_show = img[:h, :w, :]
+
+            bboxes = np.vstack(bbox_result)
+            labels = [
+                np.full(bbox.shape[0], i, dtype=np.int32)
+                for i, bbox in enumerate(bbox_result)
+            ]
+            labels = np.concatenate(labels)
+            colors = [DOTA_COLORS[class_names[label]][::-1] for label in labels]
+
+            # draw segmentation masks
+            if segm_result is not None and (show_flag == 2 or show_flag == 0):
+                segms = mmcv.concat_list(segm_result)
+                inds = np.where(bboxes[:, -1] > score_thr)[0]
+                for ind in inds:
+                    color_mask = np.random.randint(
+                        0, 256, (1, 3), dtype=np.uint8)
+                    mask = maskUtils.decode(segms[ind]).astype(np.bool)
+                    
+                    segms[ind]['counts'] = segms[ind]['counts'].decode()
+                    thetaobb, pointobb = wwtool.segm2rbbox(segms[ind])
+
+                    for idx in range(-1, 3, 1):
+                        cv2.line(img_show, (int(pointobb[idx * 2]), int(pointobb[idx * 2 + 1])), (int(pointobb[(idx + 1) * 2]), int(pointobb[(idx + 1) * 2 + 1])), colors[ind], thickness=thickness)
+
+                    # img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+            
+            scores = bboxes[:, -1]
+            inds = scores > score_thr
+            labels = labels[inds]
+            bboxes = bboxes[inds, :]
+            # draw bounding boxes
+            if (show_flag == 2 or show_flag == 1):
+                for idx, (bbox, label) in enumerate(zip(bboxes, labels)):
+                    bbox_int = bbox.astype(np.int32)
+                    left_top = (bbox_int[0], bbox_int[1])
+                    right_bottom = (bbox_int[2], bbox_int[3])
+                    cv2.rectangle(
+                        img_show, left_top, right_bottom, colors[idx], thickness=thickness)
+
+        wwtool.show_image(img_show, win_size=800, save_name=out_file)

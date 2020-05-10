@@ -3,6 +3,7 @@ import numpy as np
 import pycocotools.mask as mask_util
 import torch
 
+import wwtool
 from mmdet.core import mask_target
 
 from ..registry import HEADS
@@ -76,9 +77,14 @@ class CenterMapHead(FCNMaskHead):
                 mask_pred_ = mask_pred[i, 0, :, :]
 
             bbox_mask = mmcv.imresize(mask_pred_, (w, h))
+            
+            # visualization
+            # bbox_mask_ = np.pad(bbox_mask, ((25, 25), (25, 25)), 'constant', constant_values = (0, 0))
+            # wwtool.show_grayscale_as_heatmap(bbox_mask_)
+
             bbox_mask = (bbox_mask > rcnn_test_cfg.mask_thr_binary).astype(
                 np.uint8)
-
+                
             if rcnn_test_cfg.get('crop_mask', False):
                 im_mask = bbox_mask
             else:

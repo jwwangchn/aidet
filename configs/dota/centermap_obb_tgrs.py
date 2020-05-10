@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='MaskRCNN',
+    type='CenterMapOBB',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -51,13 +51,13 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
-        type='FCNMaskHead',
-        num_convs=4,
+        type='CenterMapHead',
+        num_convs=10,
         in_channels=256,
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
+            type='CenterMapLoss', use_mask=True, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -123,7 +123,15 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadAnnotations', 
+        with_bbox=True, 
+        with_mask=True, 
+        poly2mask=False, 
+        poly2centermap=True, 
+        centermap_encode='centerness', 
+        centermap_rate=0.5, 
+        centermap_factor=4,
+        show=False),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -147,8 +155,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=2,
-    workers_per_gpu=2,
+    imgs_per_gpu=1,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_trainval_{}_{}_best_keypoint.json'.format(dataset_version, train_rate),
@@ -188,7 +196,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/mask_rcnn_r50_fpn_1x_dota'
+work_dir = './work_dirs/centermap_obb_tgrs'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
