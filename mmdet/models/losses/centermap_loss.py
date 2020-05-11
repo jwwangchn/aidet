@@ -6,7 +6,7 @@ from ..registry import LOSSES
 from .utils import weight_reduce_loss
 from .utils import weighted_loss
 
-def mask_centermap(pred, target, label, reduction='mean', avg_factor=None):
+def mask_centermap(pred, target, label, reduction='mean', avg_factor=None, mask_weights=None):
     # TODO: handle these two reserved arguments
     assert reduction == 'mean' and avg_factor is None
     num_rois = pred.size()[0]
