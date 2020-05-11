@@ -264,7 +264,7 @@ class DOTADataset(CocoDataset):
                            'obb': "/Task1_{:s}.txt"}
 
         # convert results to txt file and save file (DOTA format)
-        # self.results2txt(results, submit_path, logger)
+        self.results2txt(results, submit_path, logger)
 
         # evaluating tasks of DOTA
         two_task_aps = []

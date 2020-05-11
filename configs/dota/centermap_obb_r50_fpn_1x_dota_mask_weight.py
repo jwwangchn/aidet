@@ -172,7 +172,13 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['bbox', 'segm'])
+evaluation = dict(interval=2, 
+                  metric=['hbb', 'obb'], 
+                  submit_path='./results/dota/centermap_obb_r50_fpn_1x_dota_mask_weight', 
+                  annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
+                  imageset_file='./data/dota/v0/test/testset.txt', 
+                  excel='./results/dota/centermap_obb_r50_fpn_1x_dota_mask_weight/centermap_obb_r50_fpn_1x_dota_mask_weight.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_obb_r50_fpn_1x_dota_mask_weight')
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
