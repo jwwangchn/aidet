@@ -1,3 +1,4 @@
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
 model = dict(
     type='CenterMapOBB',
@@ -57,7 +58,25 @@ model = dict(
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask=True, loss_weight=3.0)))
+            type='CenterMapLoss', use_mask=True, loss_weight=3.0)),
+    semantic_roi_extractor=dict(
+        type='SingleRoIExtractor',
+        roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
+        out_channels=256,
+        featmap_strides=[4]),
+    semantic_head=dict(
+        type='WeightedPseudoSegmentationHead',
+        num_convs=1,
+        in_channels=256,
+        inside_channels=128,
+        conv_out_channels=256,
+        num_classes=16,
+        ignore_label=255,
+        loss_weight=1.0,
+        use_focal_loss=True,
+        with_background_reweight=True,
+        reweight_version='v1',
+        norm_cfg=norm_cfg))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
