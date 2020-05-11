@@ -4,6 +4,8 @@ import os.path as osp
 import tempfile
 import shutil
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
 
 import mmcv
 import numpy as np
@@ -17,6 +19,7 @@ import wwtool
 from wwtool import segm2rbbox
 from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
 
+matplotlib.use('Agg')
 
 @DATASETS.register_module
 class DOTADataset(CocoDataset):
@@ -251,6 +254,7 @@ class DOTADataset(CocoDataset):
                  submit_path='./results/dota/common_submit',
                  annopath='./data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt',
                  imageset_file='./data/dota/v0/evaluation_sample/testset.txt',
+                 PR_path=None,
                  logger=None,
                  excel=None,
                  jsonfile_prefix=None):
@@ -264,6 +268,7 @@ class DOTADataset(CocoDataset):
 
         # evaluating tasks of DOTA
         two_task_aps = []
+        two_task_prs = []
         for task in tasks:
             msg = "Evaluating in DOTA {} Task".format(task)
             if logger is None:
@@ -271,9 +276,10 @@ class DOTADataset(CocoDataset):
             print_log(msg, logger=logger)
             result_path = os.path.join(submit_path, self.mergetxt_save_dir[task] + filename_prefix[task])
 
-            mean_AP, class_AP = self._evaluation_dota(result_path, annopath, imageset_file, task, logger)
+            mean_AP, class_AP, class_PR = self._evaluation_dota(result_path, annopath, imageset_file, task, logger)
             class_AP['mAP'] = mean_AP
             two_task_aps.append(class_AP)
+            two_task_prs.append(class_PR)
 
         eval_results = {**two_task_aps[0], **two_task_aps[1]}
         for key, value in eval_results.items():
@@ -293,16 +299,37 @@ class DOTADataset(CocoDataset):
             results = mmcv.load(results)
         self.format_results(results, jsonfile_prefix)
 
+        if PR_path:
+            mmcv.mkdir_or_exist(PR_path)
+            for task_idx, task in enumerate(tasks):
+                pr_fn = "{}.pdf".format(task)
+                pr_file = os.path.join(PR_path, pr_fn)
+                fig, ax = plt.subplots(figsize=(12, 10))
+                for classname in DOTADataset.CLASSES_OFFICIAL:
+                    ap = two_task_aps[task_idx][classname]
+                    recall, precision = two_task_prs[task_idx][classname]
+                    
+                    ax.plot(recall, precision, label='{} ({})'.format(classname, ap))
+                
+                ax.set_title('PR curve of {} task, mAP = {}'.format(task, two_task_aps[task_idx]['mAP']))
+                ax.set_xlabel('recall')
+                ax.set_ylabel('precision')
+                ax.set_xlim(0, 1)
+                ax.set_ylim(0.2, 1)
+                ax.legend()
+                plt.savefig(pr_file, bbox_inches='tight', dpi=600, pad_inches=0.1)
+                plt.clf()
+
         return eval_results
 
     def _evaluation_dota(self, detpath, annopath, imagesetfile, task, logger):
-        # mean_metrics = [mean ap, mean precision, mean reccall]
+        # mean_metrics = [mean ap, mean precision, mean recall]
         mean_AP = 0
-        # metrics = {"class name": [ap, precision, reccall]}
+        class_PR = dict()
         class_AP = dict()
         class_AP['Task'] = task
         for idx, classname in enumerate(DOTADataset.CLASSES_OFFICIAL):
-            reccall, precision, ap = self.dota_eval_functions[task](detpath,
+            recall, precision, ap = self.dota_eval_functions[task](detpath,
                 annopath,
                 imagesetfile,
                 classname,
@@ -310,6 +337,7 @@ class DOTADataset(CocoDataset):
                 use_07_metric=True)
             ap_format = round(ap * 100.0, 2)
             class_AP[DOTADataset.CLASSES_OFFICIAL[idx]] = ap_format
+            class_PR[DOTADataset.CLASSES_OFFICIAL[idx]] = [recall, precision]
             mean_AP = mean_AP + ap_format
 
         mean_AP = mean_AP/(len(DOTADataset.CLASSES_OFFICIAL))
@@ -318,4 +346,4 @@ class DOTADataset(CocoDataset):
         print_log('mAP: {}'.format(mean_AP), logger=logger)
         print_log('class metrics: {}'.format(class_AP), logger=logger)
         
-        return mean_AP, class_AP
+        return mean_AP, class_AP, class_PR
