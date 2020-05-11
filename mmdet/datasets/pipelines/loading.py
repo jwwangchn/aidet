@@ -85,6 +85,7 @@ class LoadAnnotations(object):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
+                 with_mask_weight=False,
                  with_heatmap_weight=False,
                  poly2mask=True,
                  poly2centermap=False,
@@ -97,6 +98,7 @@ class LoadAnnotations(object):
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
+        self.with_mask_weight = with_mask_weight
         self.with_heatmap_weight = with_heatmap_weight
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
@@ -108,6 +110,10 @@ class LoadAnnotations(object):
         self.anchor_centermaps = {'centerness': self.centerness_image,
                                   'gaussian': None,
                                   'ellipse': None}
+        self.anchor_mask_weight = 255 - wwtool.generate_centerness_image(height=anchor_centermap_scale, 
+                                                                   width=anchor_centermap_scale, 
+                                                                   factor=centermap_factor,
+                                                                   threshold = 0)
         self.show = show
 
     def _load_bboxes(self, results):
@@ -150,6 +156,16 @@ class LoadAnnotations(object):
         centermap[location[1]:location[3], location[0]:location[2]] += transformed
         return centermap
 
+    def _poly2centermap_weight(self, mask_ann, img_h, img_w):
+        centermap = np.zeros((img_h, img_w), dtype=np.uint8)
+        anchor_centermap = self.anchor_mask_weight
+        transformed, location = wwtool.pointobb2pseudomask(mask_ann,
+                                                           anchor_centermap, 
+                                                           host_height=img_h, 
+                                                           host_width=img_w)
+        centermap[location[1]:location[3], location[0]:location[2]] += transformed
+        return centermap
+
     def _load_masks(self, results):
         h, w = results['img_info']['height'], results['img_info']['width']
         gt_masks = results['ann_info']['masks']
@@ -165,6 +181,20 @@ class LoadAnnotations(object):
                 wwtool.show_grayscale_as_heatmap(gt_mask)
 
         results['mask_fields'].append('gt_masks')
+        return results
+
+    def _load_mask_weights(self, results):
+        h, w = results['img_info']['height'], results['img_info']['width']
+        gt_mask_weights = results['ann_info']['masks']
+        gt_mask_weights = [self._poly2centermap_weight(mask_weight[0], h, w) for mask_weight in gt_mask_weights]
+        results['gt_mask_weights'] = gt_mask_weights
+
+        # visualization
+        if self.show:
+            for gt_mask_weight in gt_mask_weights:
+                wwtool.show_grayscale_as_heatmap(gt_mask_weight)
+
+        results['mask_fields'].append('gt_mask_weights')
         return results
 
     def _load_semantic_seg(self, results):
@@ -194,6 +224,8 @@ class LoadAnnotations(object):
             results = self._load_masks(results)
         if self.with_seg:
             results = self._load_semantic_seg(results)
+        if self.with_mask_weight:
+            results = self._load_mask_weights(results)
         if self.with_heatmap_weight:
             results = self._load_heatmap_weight(results)
         return results
