@@ -17,7 +17,6 @@ from .two_stage import TwoStageDetector
 
 @DETECTORS.register_module
 class CenterMapOBB(TwoStageDetector):
-
     def __init__(self,
                  backbone,
                  rpn_head,
@@ -69,6 +68,7 @@ class CenterMapOBB(TwoStageDetector):
                       gt_labels,
                       gt_bboxes_ignore=None,
                       gt_masks=None,
+                      gt_mask_weights=None,
                       gt_semantic_seg=None,
                       gt_heatmap_weight=None,
                       proposals=None):
@@ -232,10 +232,14 @@ class CenterMapOBB(TwoStageDetector):
                 mask_pred = self.mask_head(mask_feats)
                 mask_targets = self.mask_head.get_target(
                     sampling_results, gt_masks, self.train_cfg.rcnn)
+                mask_weights = self.mask_head.get_target(
+                    sampling_results, gt_mask_weights, self.train_cfg.rcnn)
                 pos_labels = torch.cat(
                     [res.pos_gt_labels for res in sampling_results])
-                loss_mask = self.mask_head.loss(mask_pred, mask_targets,
-                                                pos_labels)
+                loss_mask = self.mask_head.loss(mask_pred, 
+                                                mask_targets,
+                                                pos_labels,
+                                                mask_weights)
                 losses.update(loss_mask)
 
         return losses

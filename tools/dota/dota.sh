@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_1x_dota_rotate'
+model='local_test'
 epoch=12
 dataset='dota'
 

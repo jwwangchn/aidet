@@ -428,6 +428,20 @@ class RandomCrop(object):
                     results['gt_masks'] = np.empty(
                         (0, ) + results['img_shape'], dtype=np.uint8)
 
+            # filter and crop the masks
+            if 'gt_mask_weights' in results:
+                valid_gt_masks = []
+                for i in np.where(valid_inds)[0]:
+                    gt_mask = results['gt_mask_weights'][i][crop_y1:crop_y2,
+                                                     crop_x1:crop_x2]
+                    valid_gt_masks.append(gt_mask)
+
+                if valid_gt_masks:
+                    results['gt_mask_weights'] = np.stack(valid_gt_masks)
+                else:
+                    results['gt_mask_weights'] = np.empty(
+                        (0, ) + results['img_shape'], dtype=np.uint8)
+
         return results
 
     def __repr__(self):
@@ -614,6 +628,20 @@ class Expand(object):
                 results['gt_masks'] = np.empty(
                     (0, ) + results['img_shape'], dtype=np.uint8)
 
+        if 'gt_mask_weights' in results:
+            expand_mask_weights = []
+            for mask in results['gt_mask_weights']:
+                expand_mask = np.full((int(h * ratio), int(w * ratio)),
+                                      0).astype(mask.dtype)
+                expand_mask[top:top + h, left:left + w] = mask
+                expand_mask_weights.append(expand_mask)
+
+            if expand_mask_weights:
+                results['gt_mask_weights'] = np.stack(expand_mask_weights)
+            else:
+                results['gt_mask_weights'] = np.empty(
+                    (0, ) + results['img_shape'], dtype=np.uint8)
+
         # not tested
         if 'gt_semantic_seg' in results:
             assert self.seg_ignore_label is not None
@@ -710,6 +738,17 @@ class MinIoURandomCrop(object):
                         ]
                         # here the valid_masks is not empty
                         results['gt_masks'] = np.stack([
+                            gt_mask[patch[1]:patch[3], patch[0]:patch[2]]
+                            for gt_mask in valid_masks
+                        ])
+
+                    if 'gt_mask_weights' in results:
+                        valid_masks = [
+                            results['gt_mask_weights'][i] for i in range(len(mask))
+                            if mask[i]
+                        ]
+                        # here the valid_masks is not empty
+                        results['gt_mask_weights'] = np.stack([
                             gt_mask[patch[1]:patch[3], patch[0]:patch[2]]
                             for gt_mask in valid_masks
                         ])
