@@ -2,7 +2,9 @@ import inspect
 
 import mmcv
 import numpy as np
+import cv2
 from numpy import random
+import wwtool
 
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from ..registry import PIPELINES
@@ -905,3 +907,140 @@ class Albu(object):
         repr_str = self.__class__.__name__
         repr_str += '(transforms={})'.format(self.transforms)
         return repr_str
+
+
+@PIPELINES.register_module
+class RandomRotate(object):
+    """Rotate the image & bbox & mask.
+
+    If the input dict contains the key "rotate", then the flag will be used,
+    otherwise it will be randomly decided by a ratio specified in the init
+    method.
+
+    Args:
+        rotate_ratio (float, optional): The rotation probability.
+        choice (float, optional): The rotation angle choice.
+    """
+
+    def __init__(self, rotate_ratio=None, choice=(0, 90, 180, 270)):
+        self.rotate_ratio = rotate_ratio
+        self.choice = choice
+        if rotate_ratio is not None:
+            assert rotate_ratio >= 0 and rotate_ratio <= 1
+        assert isinstance(choice, tuple)
+
+    def get_corners(self, bboxes):
+        """Get corners of bounding boxes
+        
+        Parameters
+        ----------
+        
+        bboxes: numpy.ndarray
+            Numpy array containing bounding boxes of shape `N X 4` where N is the 
+            number of bounding boxes and the bounding boxes are represented in the
+            format `x1 y1 x2 y2`
+        
+        returns
+        -------
+        
+        numpy.ndarray
+            Numpy array of shape `N x 8` containing N bounding boxes each described by their 
+            corner co-ordinates `x1 y1 x2 y2 x3 y3 x4 y4`      
+            
+        """
+        width = (bboxes[:,2] - bboxes[:,0]).reshape(-1,1)
+        height = (bboxes[:,3] - bboxes[:,1]).reshape(-1,1)
+        
+        x1 = bboxes[:,0].reshape(-1,1)
+        y1 = bboxes[:,1].reshape(-1,1)
+        
+        x2 = x1 + width
+        y2 = y1 
+        
+        x3 = x1
+        y3 = y1 + height
+        
+        x4 = bboxes[:,2].reshape(-1,1)
+        y4 = bboxes[:,3].reshape(-1,1)
+        
+        corners = np.hstack((x1,y1,x2,y2,x3,y3,x4,y4))
+        
+        return corners
+
+    def bbox_rotate(self, bboxes, img_shape, rotate_angle):
+        """rotate bboxes.
+
+        Args:
+            bboxes(ndarray): shape (..., 4*k)
+            img_shape(tuple): (height, width)
+        """
+        assert bboxes.shape[-1] % 4 == 0
+        if bboxes.shape[0] == 0:
+            return bboxes
+        corners = self.get_corners(bboxes)
+        corners = np.hstack((corners, bboxes[:, 4:]))
+
+        corners = corners.reshape(-1, 2)
+        corners = np.hstack((corners, np.ones((corners.shape[0], 1), dtype = type(corners[0][0]))))
+        angle = rotate_angle
+        h, w, _ = img_shape
+        cx, cy = w / 2, h / 2
+        M = cv2.getRotationMatrix2D((cx, cy), -angle, 1.0)
+        cos = np.abs(M[0, 0])
+        sin = np.abs(M[0, 1])
+        nW = int((h * sin) + (w * cos))
+        nH = int((h * cos) + (w * sin))
+        M[0, 2] += (nW / 2) - cx
+        M[1, 2] += (nH / 2) - cy
+
+        calculated = np.dot(M, corners.T).T
+        calculated = np.array(calculated, dtype=np.float32)
+        calculated = calculated.reshape(-1, 8)
+
+        x_ = calculated[:, [0, 2, 4, 6]]
+        y_ = calculated[:, [1, 3, 5, 7]]
+        
+        xmin = np.min(x_, 1).reshape(-1, 1)
+        ymin = np.min(y_, 1).reshape(-1, 1)
+        xmax = np.max(x_, 1).reshape(-1, 1)
+        ymax = np.max(y_, 1).reshape(-1, 1)
+        
+        rotated = np.hstack((xmin, ymin, xmax, ymax))
+        return rotated
+
+    def __call__(self, results):
+        if 'rotate' not in results:
+            rotate = True if np.random.rand() < self.rotate_ratio else False
+            results['rotate'] = rotate
+        if 'rotate_angle' not in results:
+            results['rotate_angle'] = np.random.choice(self.choice)
+        if results['rotate']:
+            # rotate image
+            results['img'] = mmcv.imrotate(
+                results['img'], results['rotate_angle'], auto_bound=True)
+            # rotate bboxes
+            for key in results.get('bbox_fields', []):
+                results[key] = self.bbox_rotate(results[key],
+                                              results['img_shape'],
+                                              results['rotate_angle'])
+            # rotate masks
+            for key in results.get('mask_fields', []):
+                masks = [
+                    mmcv.imrotate(mask, results['rotate_angle'], auto_bound=True)
+                    for mask in results[key]
+                ]
+                if masks:
+                    results[key] = np.stack(masks)
+                else:
+                    results[key] = np.empty(
+                        (0, ) + results['img_shape'], dtype=np.uint8)
+
+            # rotate segs
+            for key in results.get('seg_fields', []):
+                results[key] = mmcv.imrotate(
+                    results[key], results['rotate_angle'], auto_bound=True)
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(rotate_ratio={})'.format(
+            self.rotate_ratio)

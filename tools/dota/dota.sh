@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_lr001_1x_dota_DJ'
+model='centermap_obb_r50_fpn_1x_dota_rotate'
 epoch=12
 dataset='dota'
 
@@ -53,7 +53,7 @@ if [ $3 == 1 ]
 then
     echo "==== start loading results files and evaluation ===="
 
-    python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/test/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/test/testset.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+    python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/test/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/test/testset.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx PR_path=$(pwd)/results/${dataset}/${model}/PR jsonfile_prefix=$(pwd)/results/${dataset}/${model}
 elif [ $3 == 2 ]
 then
     echo "==== skip evaluation ===="
