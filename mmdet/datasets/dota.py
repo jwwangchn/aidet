@@ -5,6 +5,9 @@ import tempfile
 import shutil
 import pandas as pd
 import matplotlib
+
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 
 import mmcv
@@ -19,7 +22,6 @@ import wwtool
 from wwtool import segm2rbbox
 from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
 
-matplotlib.use('Agg')
 
 @DATASETS.register_module
 class DOTADataset(CocoDataset):

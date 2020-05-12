@@ -18,7 +18,8 @@ class CenterMapHead(FCNMaskHead):
 
     def loss(self, mask_pred, mask_targets, labels, mask_weights):
         mask_targets = mask_targets / 255.0
-        mask_weights = mask_weights / 255.0 + 1.0
+        if mask_weights is not None:
+            mask_weights = mask_weights / 255.0 + 1.0
         loss = dict()
         if self.class_agnostic:
             loss_mask = self.loss_mask(mask_pred, 
