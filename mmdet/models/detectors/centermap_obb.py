@@ -232,8 +232,11 @@ class CenterMapOBB(TwoStageDetector):
                 mask_pred = self.mask_head(mask_feats)
                 mask_targets = self.mask_head.get_target(
                     sampling_results, gt_masks, self.train_cfg.rcnn)
-                mask_weights = self.mask_head.get_target(
-                    sampling_results, gt_mask_weights, self.train_cfg.rcnn)
+                if gt_mask_weights is not None:
+                    mask_weights = self.mask_head.get_target(
+                        sampling_results, gt_mask_weights, self.train_cfg.rcnn)
+                else:
+                    mask_weights = None
                 pos_labels = torch.cat(
                     [res.pos_gt_labels for res in sampling_results])
                 loss_mask = self.mask_head.loss(mask_pred, 
