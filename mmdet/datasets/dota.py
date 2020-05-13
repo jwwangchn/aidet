@@ -230,7 +230,7 @@ class DOTADataset(CocoDataset):
                 command_bbox = '%s %.3f %.1f %.1f %.1f %.1f\n' % (filenames[i], scores[i], bbox[0], bbox[1], bbox[2], bbox[3])
             else:
                 if DOTADataset.CLASSES[labels[i] - 1] == 'storage-tank':
-                    bbox = wwtool.bbox2pointobb(bboxes['obb'][i])
+                    bbox = wwtool.bbox2pointobb(bboxes['hbb'][i])
                 command_bbox = '%s %.3f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n' % (filenames[i], scores[i], bbox[0], bbox[1], bbox[2], bbox[3], bbox[4], bbox[5], bbox[6], bbox[7])
             write_handle[DOTADataset.CLASSES[labels[i] - 1]].write(command_bbox)
 
