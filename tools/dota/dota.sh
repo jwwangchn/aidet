@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='local_test'
+model='centermap_net_tgrs_V1'
 epoch=12
 dataset='dota'
 
