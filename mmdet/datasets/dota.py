@@ -20,7 +20,7 @@ from .registry import DATASETS
 
 import wwtool
 from wwtool import segm2rbbox
-from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
+from wwtool.datasets.dota import mergebypoly, mergebypoly_mp, mergebyrec, mergebyrec_mp, dota_eval_task1, dota_eval_task2
 
 
 @DATASETS.register_module
@@ -246,9 +246,9 @@ class DOTADataset(CocoDataset):
             os.makedirs(mergetxt_path)
 
         if task == 'hbb':
-            mergebyrec(txt_path, mergetxt_path)
+            mergebyrec_mp(txt_path, mergetxt_path, nms_thresh=0.3)
         else:
-            mergebypoly(txt_path, mergetxt_path)
+            mergebypoly_mp(txt_path, mergetxt_path, o_thresh=0.1)
         
     def evaluate(self,
                  results,
