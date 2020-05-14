@@ -144,6 +144,8 @@ train_pipeline = [
     dict(type='LoadAnnotations', 
         with_bbox=True, 
         with_mask=True, 
+        with_seg=True,
+        with_heatmap_weight=True, 
         poly2mask=False, 
         poly2centermap=True, 
         centermap_encode='centerness', 
@@ -154,8 +156,9 @@ train_pipeline = [
     dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
+    dict(type='SegRescale', scale_factor=1 / 4),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -179,6 +182,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_trainval_{}_best.json'.format(dataset_version),
         img_prefix=data_root + 'trainval/',
+        seg_prefix=data_root + 'pseudo_segmentation/',
+        heatmap_weight_prefix=data_root + 'heatmap_weight/',
         pipeline=train_pipeline,
         min_area=16,
         max_small_length=4),

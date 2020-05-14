@@ -20,7 +20,7 @@ from .registry import DATASETS
 
 import wwtool
 from wwtool import segm2rbbox
-from wwtool.datasets.dota import mergebypoly, mergebyrec, dota_eval_task1, dota_eval_task2
+from wwtool.datasets.dota import mergebypoly, mergebypoly_mp, mergebyrec, mergebyrec_mp, dota_eval_task1, dota_eval_task2
 
 
 @DATASETS.register_module
@@ -198,7 +198,7 @@ class DOTADataset(CocoDataset):
         # 3. generate subimage results
         print_log("\nStart write results to txt", logger=logger)
         for task in ['hbb', 'obb']:
-            self.format_dota_results(submit_path, filenames, bboxes[task], scores, labels, task)
+            self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
 
         # 4. generate original image results
         print_log("\nStart merge txt file", logger=logger)
@@ -206,12 +206,12 @@ class DOTADataset(CocoDataset):
             self.merge_txt(submit_path, task)
 
     def format_dota_results(self, 
-                       submit_path, 
-                       filenames, 
-                       bboxes, 
-                       scores, 
-                       labels, 
-                       task='hbb'):
+                            submit_path, 
+                            filenames, 
+                            bboxes, 
+                            scores, 
+                            labels, 
+                            task='hbb'):
         txt_path = os.path.join(submit_path, self.txt_save_dir[task])
         if not os.path.exists(txt_path):
             os.makedirs(txt_path)
@@ -225,10 +225,12 @@ class DOTADataset(CocoDataset):
             txt_file_name = "{}_{}.txt".format(self.txt_file_prefix[task], classname)
             write_handle[classname] = open(os.path.join(txt_path, txt_file_name), 'a+')
 
-        for i, bbox in enumerate(bboxes):
+        for i, bbox in enumerate(bboxes[task]):
             if task == 'hbb':
                 command_bbox = '%s %.3f %.1f %.1f %.1f %.1f\n' % (filenames[i], scores[i], bbox[0], bbox[1], bbox[2], bbox[3])
             else:
+                if DOTADataset.CLASSES[labels[i] - 1] == 'storage-tank':
+                    bbox = wwtool.bbox2pointobb(bboxes['hbb'][i])
                 command_bbox = '%s %.3f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n' % (filenames[i], scores[i], bbox[0], bbox[1], bbox[2], bbox[3], bbox[4], bbox[5], bbox[6], bbox[7])
             write_handle[DOTADataset.CLASSES[labels[i] - 1]].write(command_bbox)
 
@@ -244,11 +246,17 @@ class DOTADataset(CocoDataset):
         else:
             shutil.rmtree(mergetxt_path)
             os.makedirs(mergetxt_path)
+        
+        # average = 0.15
+        hbb_nms_thr = {'harbor': 0.4, 'ship': 0.4, 'small-vehicle': 0.4, 'large-vehicle': 0.5, 'storage-tank': 0.1, 'plane': 0.25, 'soccer-ball-field': 0.2, 'bridge': 0.5, 'baseball-diamond': 0.15, 'tennis-court': 0.2, 'helicopter': 0.2, 'roundabout': 0.15, 'swimming-pool': 0.2, 'ground-track-field': 0.15, 'basketball-court': 0.2}
+        
+        # average = 0.4
+        obb_nms_thr = {'harbor': 0.1, 'ship': 0.05, 'small-vehicle': 0.15, 'large-vehicle': 0.5, 'storage-tank': 0.35, 'plane': 0.2, 'soccer-ball-field': 0.2, 'bridge': 0.45, 'baseball-diamond': 0.2, 'tennis-court': 0.1, 'helicopter': 0.1, 'roundabout': 0.15, 'swimming-pool': 0.05, 'ground-track-field': 0.4, 'basketball-court': 0.2}
 
         if task == 'hbb':
-            mergebyrec(txt_path, mergetxt_path)
+            mergebyrec_mp(txt_path, mergetxt_path, nms_thresh=hbb_nms_thr)
         else:
-            mergebypoly(txt_path, mergetxt_path)
+            mergebypoly_mp(txt_path, mergetxt_path, o_thresh=obb_nms_thr)
         
     def evaluate(self,
                  results,
