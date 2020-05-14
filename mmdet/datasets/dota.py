@@ -251,7 +251,7 @@ class DOTADataset(CocoDataset):
         hbb_nms_thr = {'harbor': 0.4, 'ship': 0.4, 'small-vehicle': 0.4, 'large-vehicle': 0.5, 'storage-tank': 0.1, 'plane': 0.25, 'soccer-ball-field': 0.2, 'bridge': 0.5, 'baseball-diamond': 0.15, 'tennis-court': 0.2, 'helicopter': 0.2, 'roundabout': 0.15, 'swimming-pool': 0.2, 'ground-track-field': 0.15, 'basketball-court': 0.2}
         
         # average = 0.4
-        obb_nms_thr = {'harbor': 0.1, 'ship': 0.05, 'small-vehicle': 0.15, 'large-vehicle': 0.5, 'storage-tank': 0.05, 'plane': 0.2, 'soccer-ball-field': 0.2, 'bridge': 0.45, 'baseball-diamond': 0.2, 'tennis-court': 0.1, 'helicopter': 0.1, 'roundabout': 0.15, 'swimming-pool': 0.05, 'ground-track-field': 0.4, 'basketball-court': 0.2}
+        obb_nms_thr = {'harbor': 0.1, 'ship': 0.05, 'small-vehicle': 0.15, 'large-vehicle': 0.5, 'storage-tank': 0.35, 'plane': 0.2, 'soccer-ball-field': 0.2, 'bridge': 0.45, 'baseball-diamond': 0.2, 'tennis-court': 0.1, 'helicopter': 0.1, 'roundabout': 0.15, 'swimming-pool': 0.05, 'ground-track-field': 0.4, 'basketball-court': 0.2}
 
         if task == 'hbb':
             mergebyrec_mp(txt_path, mergetxt_path, nms_thresh=hbb_nms_thr)
