@@ -117,7 +117,7 @@ test_cfg = dict(
 # dataset settings
 dataset_type = 'DOTADataset'
 dota_version = 'v1.0'
-dataset_version = 'DJ'
+dataset_version = 'v1'
 train_rate = '1.0'                  # 1.0_0.5 or 1.0
 val_rate = '1.0'                    # 1.0_0.5 or 1.0
 data_root = './data/dota/{}/coco/'.format(dataset_version)
@@ -165,7 +165,7 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_best_no_ground_truth.json'.format(dataset_version),
+        ann_file=data_root + 'annotations/dota_test_v1_1.0_best_keypoint_no_ground_truth.json',
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
@@ -200,5 +200,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/centermap_obb_r50_fpn_lr001_1x_dota_DJ'
 load_from = None
-resume_from = './work_dirs/centermap_obb_r50_fpn_lr001_1x_dota_DJ/epoch_2.pth'
+resume_from = None
 workflow = [('train', 1)]
