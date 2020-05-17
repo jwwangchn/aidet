@@ -159,7 +159,7 @@ train_pipeline = [
         type='Resize',
         img_scale=[(1024, 1024), (896, 896), (768, 768)],
         keep_ratio=True,
-        multiscale_mode='value'),
+        multiscale_mode='range'),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
@@ -207,11 +207,11 @@ data = dict(
         pipeline=test_pipeline))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
-                  submit_path='./results/dota/centermap_net_tgrs_mask_weight_ms_V4', 
+                  submit_path='./results/dota/centermap_net_tgrs_mask_weight_ms_range_V4', 
                   annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
                   imageset_file='./data/dota/v0/test/testset.txt', 
-                  excel='./results/dota/centermap_net_tgrs_mask_weight_ms_V4/centermap_net_tgrs_mask_weight_ms_V4.xlsx', 
-                  jsonfile_prefix='./results/dota/centermap_net_tgrs_mask_weight_ms_V4')
+                  excel='./results/dota/centermap_net_tgrs_mask_weight_ms_range_V4/centermap_net_tgrs_mask_weight_ms_range_V4.xlsx', 
+                  jsonfile_prefix='./results/dota/centermap_net_tgrs_mask_weight_ms_range_V4')
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -235,7 +235,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/centermap_net_tgrs_mask_weight_ms_V4'
+work_dir = './work_dirs/centermap_net_tgrs_mask_weight_ms_range_V4'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

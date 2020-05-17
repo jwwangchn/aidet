@@ -155,7 +155,11 @@ train_pipeline = [
         centermap_encode='centerness', 
         centermap_rate=0.5, 
         centermap_factor=4),
-    dict(type='Resize', img_scale=[(1024, 1024), (896, 896), (768, 768)], keep_ratio=True),
+    dict(
+        type='Resize',
+        img_scale=[(1024, 1024), (896, 896), (768, 768)],
+        keep_ratio=True,
+        multiscale_mode='value'),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
