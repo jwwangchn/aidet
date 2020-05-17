@@ -134,6 +134,9 @@ class DefaultFormatBundle(object):
         if 'gt_semantic_seg' in results:
             results['gt_semantic_seg'] = DC(
                 to_tensor(results['gt_semantic_seg'][None, ...]), stack=True)
+        if 'gt_heatmap_weight' in results:
+            results['gt_heatmap_weight'] = DC(
+                to_tensor(results['gt_heatmap_weight'][None, ...]), stack=True)
         return results
 
     def __repr__(self):

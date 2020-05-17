@@ -157,14 +157,14 @@ train_pipeline = [
         centermap_factor=4),
     dict(
         type='Resize',
-        img_scale=[(1024, 1024), (896, 896), (768, 768)],
+        img_scale=[(1024, 1024), (1024, 768)],
         keep_ratio=True,
         multiscale_mode='range'),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
-    dict(type='SegRescale', scale_factor=1 / 4),
+    dict(type='SegRescale', scale_factor=1/4),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight', 'gt_mask_weights']),
 ]
