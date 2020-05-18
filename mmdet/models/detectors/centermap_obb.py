@@ -405,7 +405,11 @@ class CenterMapOBB(TwoStageDetector):
                                                 rcnn_test_cfg.score_thr,
                                                 rcnn_test_cfg.nms,
                                                 rcnn_test_cfg.max_per_img)
-
+        # if rescale:
+        #     _det_bboxes = det_bboxes
+        # else:
+        #     _det_bboxes = det_bboxes.clone()
+        #     _det_bboxes[:, :4] *= img_metas[0][0]['scale_factor']
         bbox_result = bbox2result(det_bboxes, det_labels,
                                   self.bbox_head.num_classes)
 
@@ -425,7 +429,7 @@ class CenterMapOBB(TwoStageDetector):
                     _bboxes = bbox_mapping(det_bboxes[:, :4], img_shape,
                                            scale_factor, flip)
                     mask_pred = self._mask_forward_test(x, _bboxes, semantic_feat=semantic)
-                    aug_masks.append(mask_pred.sigmoid().cpu().numpy())
+                    aug_masks.append(mask_pred.cpu().numpy())
                     aug_img_metas.append(img_meta)
 
                 merged_masks = merge_aug_masks(aug_masks, aug_img_metas,
