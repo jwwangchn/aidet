@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='CenterMapOBB',
+    type='MaskOBB',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
