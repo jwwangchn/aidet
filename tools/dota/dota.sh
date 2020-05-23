@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_net_tgrs_mask_weight_ms_2x_V4'
-epoch=24
+model='dota_v001_mask_obb_r50_v1_train'
+epoch=12
 dataset='dota'
 
 #------------------------------train-----------------------------------
