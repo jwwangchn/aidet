@@ -1,3 +1,16 @@
+"""
+version:
+    V001
+model: 
+    Mask OBB + ResNet50
+data:
+    train: v1 + train
+    test: v1 + val
+results:
+    IOU>=0.5
+        
+
+"""
 # model settings
 model = dict(
     type='MaskOBB',

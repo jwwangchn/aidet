@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v001_mask_obb_r50_v1_train'
+model='dota_v005_centermap_obb_r50_v1_train'
 evaluation_set='val'
 epoch=12
 dataset='dota'
