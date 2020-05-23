@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_net_tgrs_mask_weight_ms_V4'
-epoch=12
+model='centermap_net_tgrs_mask_weight_ms_2x_V4'
+epoch=24
 dataset='dota'
 
 #------------------------------train-----------------------------------
@@ -42,6 +42,13 @@ then
     mkdir -p results/${dataset}/${model}
 
     python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/test/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/test/testset.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+elif [ $2 == 3 ]
+then
+    echo "==== start 1 GPU (evaluation sample) test ===="
+    export CUDA_VISIBLE_DEVICES=0
+    mkdir -p results/${dataset}/${model}
+
+    python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/evaluation_sample/evaluation_sample.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
 elif [ $2 == 0 ]
 then
     # read the results file
