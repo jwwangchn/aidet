@@ -41,7 +41,8 @@ class DOTADataset(CocoDataset):
                  test_mode=False,
                  filter_empty_gt=True,
                  min_area=0,
-                 max_small_length=0):
+                 max_small_length=0,
+                 evaluation_iou_threshold=0.5):
         super(DOTADataset, self).__init__(ann_file,
                                           pipeline,
                                           data_root,
@@ -61,6 +62,7 @@ class DOTADataset(CocoDataset):
         self.heatmap_weight_prefix = heatmap_weight_prefix
         self.min_area = min_area
         self.max_small_length = max_small_length
+        self.evaluation_iou_threshold = evaluation_iou_threshold
 
         # join paths if data_root is specified
         if self.data_root is not None:
@@ -343,7 +345,7 @@ class DOTADataset(CocoDataset):
                 annopath,
                 imagesetfile,
                 classname,
-                ovthresh=0.5,
+                ovthresh=self.evaluation_iou_threshold,
                 use_07_metric=True)
             ap_format = round(ap * 100.0, 2)
             class_AP[DOTADataset.CLASSES_OFFICIAL[idx]] = ap_format
