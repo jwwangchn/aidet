@@ -57,7 +57,7 @@ model = dict(
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask_weight=True, use_mask=True, loss_weight=3.0)))
+            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
