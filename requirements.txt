@@ -102,7 +102,6 @@ numexpr==2.6.8
 numpy==1.15.1
 numpydoc==0.8.0
 nvidia-ml-py3==7.352.0
-odo==0.5.1
 olefile==0.46
 opencv-python>=3.4.3.18
 openpyxl==2.5.6
