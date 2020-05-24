@@ -168,7 +168,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
         img_prefix=data_root + 'val/',
-        pipeline=test_pipeline))
+        pipeline=test_pipeline,
+        evaluation_iou_threshold=0.7))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
