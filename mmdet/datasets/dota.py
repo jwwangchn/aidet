@@ -261,8 +261,8 @@ class DOTADataset(CocoDataset):
             pass
         else:
             for class_name in DOTADataset.CLASSES:
-                hbb_nms_thr[class_name] = 0.6
-                obb_nms_thr[class_name] = 0.6
+                hbb_nms_thr[class_name] = 0.3
+                obb_nms_thr[class_name] = 0.3
             
         if task == 'hbb':
             mergebyrec_mp(txt_path, mergetxt_path, nms_thresh=hbb_nms_thr)

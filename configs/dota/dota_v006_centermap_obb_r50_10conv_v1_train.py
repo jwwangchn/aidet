@@ -170,7 +170,7 @@ data = dict(
         ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
         img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.6,
+        evaluation_iou_threshold=0.7,
         classwise_nms_threshold=True))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
