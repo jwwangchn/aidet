@@ -25,7 +25,6 @@ cffi==1.11.5
 chardet==3.0.4
 cligj==0.5.0
 cloudpickle==0.5.5
-clyent==1.2.2
 colorama==0.3.9
 constantly==15.1.0
 contextlib2==0.5.5
