@@ -131,6 +131,7 @@ train_pipeline = [
         centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -169,7 +170,8 @@ data = dict(
         ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
         img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7))
+        evaluation_iou_threshold=0.6,
+        classwise_nms_threshold=True))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)

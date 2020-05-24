@@ -42,7 +42,8 @@ class DOTADataset(CocoDataset):
                  filter_empty_gt=True,
                  min_area=0,
                  max_small_length=0,
-                 evaluation_iou_threshold=0.5):
+                 evaluation_iou_threshold=0.5,
+                 classwise_nms_threshold=True):
         super(DOTADataset, self).__init__(ann_file,
                                           pipeline,
                                           data_root,
@@ -63,6 +64,7 @@ class DOTADataset(CocoDataset):
         self.min_area = min_area
         self.max_small_length = max_small_length
         self.evaluation_iou_threshold = evaluation_iou_threshold
+        self.classwise_nms_threshold = classwise_nms_threshold
 
         # join paths if data_root is specified
         if self.data_root is not None:
@@ -154,53 +156,53 @@ class DOTADataset(CocoDataset):
         Returns:
             No
         """
-        # 1. convert pkl to dict
-        if type(results) == str:
-            # loading results from pkl file
-            results = mmcv.load(results)
+        # # 1. convert pkl to dict
+        # if type(results) == str:
+        #     # loading results from pkl file
+        #     results = mmcv.load(results)
 
-        hbb_obb_results = []
-        prog_bar = mmcv.ProgressBar(len(self))
+        # hbb_obb_results = []
+        # prog_bar = mmcv.ProgressBar(len(self))
 
-        for idx in range(len(self)):
-            det, seg = results[idx]
-            img_id = self.img_ids[idx]
-            img_info = self.img_infos[idx]
+        # for idx in range(len(self)):
+        #     det, seg = results[idx]
+        #     img_id = self.img_ids[idx]
+        #     img_info = self.img_infos[idx]
 
-            # bboxes shape = [15, N], per-class
-            for label in range(len(det)):
-                bboxes, segms = det[label], seg[label]
-                for idx, (bbox, segm) in enumerate(zip(bboxes, segms)):
+        #     # bboxes shape = [15, N], per-class
+        #     for label in range(len(det)):
+        #         bboxes, segms = det[label], seg[label]
+        #         for idx, (bbox, segm) in enumerate(zip(bboxes, segms)):
                     
-                    data = dict()
-                    score = float(bbox[4])
-                    data['file_name'] = img_info['filename']
-                    data['image_id'] = img_id
-                    data['score'] = score
-                    data['category_id'] = self.cat_ids[label]
-                    data['bbox'] = bbox[:-1].tolist()
-                    segm['counts'] = segm['counts'].decode()
-                    data['segmentation'] = segm
-                    data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
-                    hbb_obb_results.append(data)
+        #             data = dict()
+        #             score = float(bbox[4])
+        #             data['file_name'] = img_info['filename']
+        #             data['image_id'] = img_id
+        #             data['score'] = score
+        #             data['category_id'] = self.cat_ids[label]
+        #             data['bbox'] = bbox[:-1].tolist()
+        #             segm['counts'] = segm['counts'].decode()
+        #             data['segmentation'] = segm
+        #             data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
+        #             hbb_obb_results.append(data)
                 
-            prog_bar.update()
+        #     prog_bar.update()
 
-        # 2. convert dict to list
-        bboxes, labels, scores, filenames = {'hbb': [], 'obb': []}, [], [], []
+        # # 2. convert dict to list
+        # bboxes, labels, scores, filenames = {'hbb': [], 'obb': []}, [], [], []
 
-        for hbb_obb_result in hbb_obb_results:
-            bboxes['hbb'].append(hbb_obb_result['bbox'])
-            bboxes['obb'].append(hbb_obb_result['rbbox'])
+        # for hbb_obb_result in hbb_obb_results:
+        #     bboxes['hbb'].append(hbb_obb_result['bbox'])
+        #     bboxes['obb'].append(hbb_obb_result['rbbox'])
 
-            labels.append(hbb_obb_result['category_id'])
-            scores.append(hbb_obb_result['score'])
-            filenames.append(hbb_obb_result['file_name'])
+        #     labels.append(hbb_obb_result['category_id'])
+        #     scores.append(hbb_obb_result['score'])
+        #     filenames.append(hbb_obb_result['file_name'])
 
-        # 3. generate subimage results
-        print_log("\nStart write results to txt", logger=logger)
-        for task in ['hbb', 'obb']:
-            self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
+        # # 3. generate subimage results
+        # print_log("\nStart write results to txt", logger=logger)
+        # for task in ['hbb', 'obb']:
+        #     self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
 
         # 4. generate original image results
         print_log("\nStart merge txt file", logger=logger)
@@ -251,10 +253,17 @@ class DOTADataset(CocoDataset):
         
         # average = 0.15
         hbb_nms_thr = {'harbor': 0.4, 'ship': 0.4, 'small-vehicle': 0.4, 'large-vehicle': 0.5, 'storage-tank': 0.1, 'plane': 0.25, 'soccer-ball-field': 0.2, 'bridge': 0.5, 'baseball-diamond': 0.15, 'tennis-court': 0.2, 'helicopter': 0.2, 'roundabout': 0.15, 'swimming-pool': 0.2, 'ground-track-field': 0.15, 'basketball-court': 0.2}
-        
+            
         # average = 0.4
         obb_nms_thr = {'harbor': 0.1, 'ship': 0.05, 'small-vehicle': 0.15, 'large-vehicle': 0.5, 'storage-tank': 0.35, 'plane': 0.2, 'soccer-ball-field': 0.2, 'bridge': 0.45, 'baseball-diamond': 0.2, 'tennis-court': 0.1, 'helicopter': 0.1, 'roundabout': 0.15, 'swimming-pool': 0.05, 'ground-track-field': 0.4, 'basketball-court': 0.2}
 
+        if self.classwise_nms_threshold:
+            pass
+        else:
+            for class_name in DOTADataset.CLASSES:
+                hbb_nms_thr[class_name] = 0.6
+                obb_nms_thr[class_name] = 0.6
+            
         if task == 'hbb':
             mergebyrec_mp(txt_path, mergetxt_path, nms_thresh=hbb_nms_thr)
         else:
