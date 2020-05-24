@@ -1,19 +1,6 @@
-"""
-version:
-    V001
-model: 
-    Mask OBB + ResNet50
-data:
-    train: v1 + train
-    test: v1 + val
-results:
-    IOU>=0.5
-        
-
-"""
 # model settings
 model = dict(
-    type='MaskOBB',
+    type='CenterMapOBB',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -64,13 +51,13 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
-        type='FCNMaskHead',
-        num_convs=4,
+        type='CenterMapHead',
+        num_convs=10,
         in_channels=256,
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
+            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -133,13 +120,21 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadAnnotations', 
+        with_bbox=True, 
+        with_mask=True, 
+        with_mask_weight=True,
+        poly2mask=False, 
+        poly2centermap=True, 
+        centermap_encode='centerness', 
+        centermap_rate=0.5, 
+        centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_mask_weights']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -174,7 +169,7 @@ data = dict(
         ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
         img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.5))
+        evaluation_iou_threshold=0.7))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
@@ -199,7 +194,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/dota_v001_mask_obb_r50_v1_train'
+work_dir = './work_dirs/dota_v006_centermap_obb_r50_10conv_v1_train'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
