@@ -156,53 +156,53 @@ class DOTADataset(CocoDataset):
         Returns:
             No
         """
-        # # 1. convert pkl to dict
-        # if type(results) == str:
-        #     # loading results from pkl file
-        #     results = mmcv.load(results)
+        # 1. convert pkl to dict
+        if type(results) == str:
+            # loading results from pkl file
+            results = mmcv.load(results)
 
-        # hbb_obb_results = []
-        # prog_bar = mmcv.ProgressBar(len(self))
+        hbb_obb_results = []
+        prog_bar = mmcv.ProgressBar(len(self))
 
-        # for idx in range(len(self)):
-        #     det, seg = results[idx]
-        #     img_id = self.img_ids[idx]
-        #     img_info = self.img_infos[idx]
+        for idx in range(len(self)):
+            det, seg = results[idx]
+            img_id = self.img_ids[idx]
+            img_info = self.img_infos[idx]
 
-        #     # bboxes shape = [15, N], per-class
-        #     for label in range(len(det)):
-        #         bboxes, segms = det[label], seg[label]
-        #         for idx, (bbox, segm) in enumerate(zip(bboxes, segms)):
+            # bboxes shape = [15, N], per-class
+            for label in range(len(det)):
+                bboxes, segms = det[label], seg[label]
+                for idx, (bbox, segm) in enumerate(zip(bboxes, segms)):
                     
-        #             data = dict()
-        #             score = float(bbox[4])
-        #             data['file_name'] = img_info['filename']
-        #             data['image_id'] = img_id
-        #             data['score'] = score
-        #             data['category_id'] = self.cat_ids[label]
-        #             data['bbox'] = bbox[:-1].tolist()
-        #             segm['counts'] = segm['counts'].decode()
-        #             data['segmentation'] = segm
-        #             data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
-        #             hbb_obb_results.append(data)
+                    data = dict()
+                    score = float(bbox[4])
+                    data['file_name'] = img_info['filename']
+                    data['image_id'] = img_id
+                    data['score'] = score
+                    data['category_id'] = self.cat_ids[label]
+                    data['bbox'] = bbox[:-1].tolist()
+                    segm['counts'] = segm['counts'].decode()
+                    data['segmentation'] = segm
+                    data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
+                    hbb_obb_results.append(data)
                 
-        #     prog_bar.update()
+            prog_bar.update()
 
-        # # 2. convert dict to list
-        # bboxes, labels, scores, filenames = {'hbb': [], 'obb': []}, [], [], []
+        # 2. convert dict to list
+        bboxes, labels, scores, filenames = {'hbb': [], 'obb': []}, [], [], []
 
-        # for hbb_obb_result in hbb_obb_results:
-        #     bboxes['hbb'].append(hbb_obb_result['bbox'])
-        #     bboxes['obb'].append(hbb_obb_result['rbbox'])
+        for hbb_obb_result in hbb_obb_results:
+            bboxes['hbb'].append(hbb_obb_result['bbox'])
+            bboxes['obb'].append(hbb_obb_result['rbbox'])
 
-        #     labels.append(hbb_obb_result['category_id'])
-        #     scores.append(hbb_obb_result['score'])
-        #     filenames.append(hbb_obb_result['file_name'])
+            labels.append(hbb_obb_result['category_id'])
+            scores.append(hbb_obb_result['score'])
+            filenames.append(hbb_obb_result['file_name'])
 
-        # # 3. generate subimage results
-        # print_log("\nStart write results to txt", logger=logger)
-        # for task in ['hbb', 'obb']:
-        #     self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
+        # 3. generate subimage results
+        print_log("\nStart write results to txt", logger=logger)
+        for task in ['hbb', 'obb']:
+            self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
 
         # 4. generate original image results
         print_log("\nStart merge txt file", logger=logger)
