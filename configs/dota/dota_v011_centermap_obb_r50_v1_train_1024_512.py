@@ -192,7 +192,7 @@ log_config = dict(
 # yapf:enable
 # runtime settings
 total_epochs = 12
-dist_params = dict(backend='nccl')
+dist_params = dict(backend='nccl', port=12345)
 log_level = 'INFO'
 work_dir = './work_dirs/dota_v011_centermap_obb_r50_v1_train_1024_512'
 load_from = None
