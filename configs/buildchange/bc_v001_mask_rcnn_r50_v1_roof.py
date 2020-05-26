@@ -154,7 +154,7 @@ train_ann_file = []
 val_ann_file = []
 img_prefix = []
 for city in cities:
-    for sub_fold in sub_city_folds:
+    for sub_fold in sub_city_folds[city]:
         train_ann_file.append(data_root + 'buildchange_v2_train_{}_{}.json'.format(city, sub_fold))
         val_ann_file.append(data_root + 'buildchange_v2_val_{}_{}.json'.format(city, sub_fold))
         img_prefix.append(data_root + '../' + "{}/{}/images/".format(city, sub_fold))
