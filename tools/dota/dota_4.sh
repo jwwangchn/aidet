@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v009_centermap_net_r50_v1_train_rotation'
+model='dota_v011_centermap_obb_r50_v1_train_1024_512'
 evaluation_set='val'
 epoch=12
 dataset='dota'
