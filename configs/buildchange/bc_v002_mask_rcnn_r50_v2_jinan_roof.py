@@ -115,7 +115,7 @@ test_cfg = dict(
         max_per_img=1000,
         mask_thr_binary=0.5))
 # dataset settings
-dataset_type = 'CocoDataset'
+dataset_type = 'BuildChangeDataset'
 data_root = 'data/buildchange/v2/coco/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -156,7 +156,7 @@ img_prefix = []
 for city in cities:
     for sub_fold in sub_city_folds[city]:
         train_ann_file.append(data_root + 'annotations/buildchange_v2_train_{}_{}.json'.format(city, sub_fold))
-        img_prefix.append(data_root + '../' + "{}/{}/images/".format(city, sub_fold))
+    img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=1,
@@ -168,12 +168,12 @@ data = dict(
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/buildchange_v2_val_jinan.json',
-        img_prefix=img_prefix,
+        img_prefix=data_root + '../' + "jinan/images/",
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/buildchange_v2_val_jinan.json',
-        img_prefix=img_prefix,
+        img_prefix=data_root + '../' + "jinan/images/",
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
