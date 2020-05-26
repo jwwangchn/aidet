@@ -160,7 +160,7 @@ for city in cities:
         img_prefix.append(data_root + '../' + "{}/{}/images/".format(city, sub_fold))
 data = dict(
     imgs_per_gpu=2,
-    workers_per_gpu=0,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=train_ann_file,
