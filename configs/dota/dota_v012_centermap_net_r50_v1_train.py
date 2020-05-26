@@ -1,3 +1,4 @@
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
 model = dict(
     type='CenterMapOBB',
@@ -52,12 +53,30 @@ model = dict(
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
         type='CenterMapHead',
-        num_convs=4,
+        num_convs=10,
         in_channels=256,
         conv_out_channels=256,
         num_classes=16,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)))
+            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)),
+    semantic_roi_extractor=dict(
+        type='SingleRoIExtractor',
+        roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
+        out_channels=256,
+        featmap_strides=[4]),
+    semantic_head=dict(
+        type='WeightedPseudoSegmentationHead',
+        num_convs=1,
+        in_channels=256,
+        inside_channels=128,
+        conv_out_channels=256,
+        num_classes=16,
+        ignore_label=255,
+        loss_weight=1.0,
+        use_focal_loss=True,
+        with_background_reweight=True,
+        reweight_version='v1',
+        norm_cfg=norm_cfg))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -124,6 +143,8 @@ train_pipeline = [
         with_bbox=True, 
         with_mask=True, 
         with_mask_weight=True,
+        with_seg=True,
+        with_heatmap_weight=True, 
         poly2mask=False, 
         poly2centermap=True, 
         centermap_encode='centerness', 
@@ -133,8 +154,9 @@ train_pipeline = [
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
+    dict(type='SegRescale', scale_factor=1 / 4),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_mask_weights']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight', 'gt_mask_weights']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -156,23 +178,28 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_train_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'train_1024_512/',
-        pipeline=train_pipeline),
+        ann_file=data_root + 'annotations/dota_train_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'train/',
+        seg_prefix=data_root + 'train_pseudo_segmentation/',
+        heatmap_weight_prefix=data_root + 'train_heatmap_weight/',
+        pipeline=train_pipeline,
+        min_area=36,
+        max_small_length=8),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_val_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'val_1024_512/',
+        ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'val/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_val_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'val_1024_512/',
+        ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7))
+        evaluation_iou_threshold=0.7,
+        classwise_nms_threshold=True))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -194,7 +221,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/dota_v011_centermap_obb_r50_v1_train_1024_512'
+work_dir = './work_dirs/dota_v012_centermap_net_r50_v1_train'
 load_from = None
-resume_from = './work_dirs/dota_v011_centermap_obb_r50_v1_train_1024_512/epoch_4.pth'
+resume_from = None
 workflow = [('train', 1)]

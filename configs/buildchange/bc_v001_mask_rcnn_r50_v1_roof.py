@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='CenterMapOBB',
+    type='MaskRCNN',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -38,7 +38,7 @@ model = dict(
         in_channels=256,
         fc_out_channels=1024,
         roi_feat_size=7,
-        num_classes=16,
+        num_classes=2,
         target_means=[0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2],
         reg_class_agnostic=False,
@@ -51,13 +51,13 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     mask_head=dict(
-        type='CenterMapHead',
+        type='FCNMaskHead',
         num_convs=4,
         in_channels=256,
         conv_out_channels=256,
-        num_classes=16,
+        num_classes=2,
         loss_mask=dict(
-            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)))
+            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -66,7 +66,8 @@ train_cfg = dict(
             pos_iou_thr=0.7,
             neg_iou_thr=0.3,
             min_pos_iou=0.3,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=256,
@@ -89,7 +90,8 @@ train_cfg = dict(
             pos_iou_thr=0.5,
             neg_iou_thr=0.5,
             min_pos_iou=0.5,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=512,
@@ -113,28 +115,19 @@ test_cfg = dict(
         max_per_img=1000,
         mask_thr_binary=0.5))
 # dataset settings
-dataset_type = 'DOTADataset'
-dataset_version = 'v1'
-data_root = './data/dota/{}/coco/'.format(dataset_version)
+dataset_type = 'CocoDataset'
+data_root = 'data/buildchange/v2/coco/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', 
-        with_bbox=True, 
-        with_mask=True, 
-        with_mask_weight=True,
-        poly2mask=False, 
-        poly2centermap=True, 
-        centermap_encode='centerness', 
-        centermap_rate=0.5, 
-        centermap_factor=4),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_mask_weights']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -153,26 +146,37 @@ test_pipeline = [
 ]
 data = dict(
     imgs_per_gpu=2,
-    workers_per_gpu=2,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_train_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'train_1024_512/',
+        ann_file=[
+            data_root + 'annotations/buildchange_v2_beijing_1024.json',
+            data_root + 'annotations/buildchange_v2_chengdu_1024.json',
+            data_root + 'annotations/buildchange_v2_jinan_1024.json',
+            data_root + 'annotations/buildchange_v2_shanghai_1024.json',
+            data_root + 'annotations/buildchange_v2_haerbin_1024.json'
+        ],
+        img_prefix=[
+            data_root + 'beijing_1024/',
+            data_root + 'chengdu_1024/',
+            data_root + 'jinan_1024/',
+            data_root + 'shanghai_1024/',
+            data_root + 'haerbin_1024/'
+        ],
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_val_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'val_1024_512/',
+        ann_file=data_root + 'annotations/buildchange_v2_xian_1024.json',
+        img_prefix=data_root + 'xian_1024/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_val_1024_512_{}_best_keypoint.json'.format(dataset_version),
-        img_prefix=data_root + 'val_1024_512/',
-        pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7))
+        ann_file=data_root + 'annotations/buildchange_v2_xian_1024.json',
+        img_prefix=data_root + 'xian_1024/',
+        pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -194,7 +198,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/dota_v011_centermap_obb_r50_v1_train_1024_512'
+work_dir = './work_dirs/bc_v001_mask_rcnn_r50_v1_roof'
 load_from = None
-resume_from = './work_dirs/dota_v011_centermap_obb_r50_v1_train_1024_512/epoch_4.pth'
+resume_from = None
 workflow = [('train', 1)]
