@@ -2,7 +2,7 @@
 #------------------------------config-----------------------------------
 for model in 'dota_v003_point_obb_r50_v1_train' 'dota_v004_h_obb_r50_v1_train'
 do
-    evaluation_set='test'
+    evaluation_set='val'
     epoch=12
     dataset='dota'
 

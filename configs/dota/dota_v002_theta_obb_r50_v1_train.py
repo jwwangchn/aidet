@@ -1,3 +1,12 @@
+"""
+Evaluating in DOTA hbb Task
+mAP: 53.57
+class metrics: {'Task': 'hbb', 'plane': 76.92, 'baseball-diamond': 47.53, 'bridge': 26.45, 'ground-track-field': 51.92, 'small-vehicle': 48.17, 'large-vehicle': 72.24, 'ship': 78.27, 'tennis-court': 88.33, 'basketball-court': 45.62, 'storage-tank': 68.7, 'soccer-ball-field': 33.24, 'roundabout': 46.19, 'harbor': 51.06, 'swimming-pool': 27.43, 'helicopter': 41.54}
+
+Evaluating in DOTA obb Task
+mAP: 46.32
+class metrics: {'Task': 'obb', 'plane': 77.31, 'baseball-diamond': 46.05, 'bridge': 18.47, 'ground-track-field': 49.17, 'small-vehicle': 27.57, 'large-vehicle': 59.7, 'ship': 62.43, 'tennis-court': 89.8, 'basketball-court': 49.74, 'storage-tank': 67.5, 'soccer-ball-field': 36.74, 'roundabout': 46.07, 'harbor': 27.49, 'swimming-pool': 19.83, 'helicopter': 16.96}
+"""
 # model settings
 model = dict(
     type='RBBoxRCNN',
@@ -164,20 +173,20 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_trainval_{}_{}_best_keypoint.json'.format(dataset_version, train_rate),
-        img_prefix=data_root + 'trainval/',
+        ann_file=data_root + 'annotations/dota_train_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'train/',
         pipeline=train_pipeline,
         encode='thetaobb'),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
-        img_prefix=data_root + 'test/',
+        ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
         encode='thetaobb'),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
-        img_prefix=data_root + 'test/',
+        ann_file=data_root + 'annotations/dota_val_{}_best_keypoint.json'.format(dataset_version),
+        img_prefix=data_root + 'val/',
         pipeline=test_pipeline,
         evaluation_iou_threshold=0.7,
         encode='thetaobb'))
