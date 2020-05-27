@@ -200,7 +200,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
-        pipeline=test_pipeline))
+        pipeline=test_pipeline,
+        evaluation_iou_threshold=0.7))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
                   submit_path='./results/dota/centermap_net_tgrs_mask_weight_V4', 
