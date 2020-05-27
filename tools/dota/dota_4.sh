@@ -1,12 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-<<<<<<< HEAD
-model='dota_v011_centermap_obb_r50_v1_train_1024_512'
-evaluation_set='val'
-=======
 model='dota_v002_theta_obb_r50_v1_train'
 evaluation_set='test'
->>>>>>> cd58d2c6d08ee7c797f4f19f40cae5114767995a
 epoch=12
 dataset='dota'
 
