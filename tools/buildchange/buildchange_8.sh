@@ -10,6 +10,7 @@ if [ $1 == 1 ]
 then
     # train but not debug
     echo "==== start no debug training, mode name = ${model} ===="
+    CUDA_LAUNCH_BLOCKING=1
     ./tools/dist_train.sh configs/${dataset}/${model}.py 8
 elif [ $1 == 2 ]
 then
