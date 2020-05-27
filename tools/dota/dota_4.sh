@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
 model='dota_v002_theta_obb_r50_v1_train'
-evaluation_set='val'
+evaluation_set='test'
 epoch=12
 dataset='dota'
 
