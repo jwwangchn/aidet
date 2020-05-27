@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v011_centermap_obb_r50_v1_train_1024_512'
-evaluation_set='val'
+model='centermap_net_tgrs_mask_weight_V4'
+evaluation_set='test'
 epoch=12
 dataset='dota'
 
