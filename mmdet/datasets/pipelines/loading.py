@@ -212,6 +212,8 @@ class LoadAnnotations(object):
         ann_info = results['ann_info']
         results['gt_rbboxes'] = ann_info['rbboxes']
         results['rbbox_fields'].append('gt_rbboxes')
+        return results
+
     def _load_heatmap_weight(self, results):
         results['gt_heatmap_weight'] = mmcv.imread(
             osp.join(results['heatmap_weight_prefix'], results['ann_info']['heatmap_weight']),

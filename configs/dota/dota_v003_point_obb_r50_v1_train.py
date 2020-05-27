@@ -52,17 +52,19 @@ model = dict(
         featmap_strides=[4, 8, 16, 32]),
     rbbox_head=dict(
         type='RBBoxHead',
-        num_fcs=2,
+        num_shared_fcs=2,
         in_channels=256,
         fc_out_channels=1024,
         roi_feat_size=7,
         num_classes=16,
-        target_means=[0., 0., 0., 0.],
-        target_stds=[0.1, 0.1, 0.2, 0.2, 0.1],
+        out_dim_reg=8,
+        target_means=[0., 0., 0., 0., 0., 0., 0., 0.],
+        target_stds=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
         reg_class_agnostic=False,
-        loss_cls=dict(
+        encode='pointobb',
+        loss_rbbox_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
+        loss_rbbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -112,7 +114,13 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=1000)
+        score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=1000),
+    rbbox=dict(
+        encode='pointobb',
+        score_thr=0.05,
+        polygon_nms_iou_thr=0.5,
+        max_per_img=1000,
+        parallel=True)
     # soft-nms is also supported for rcnn testing
     # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)
 )
@@ -130,7 +138,7 @@ train_pipeline = [
     dict(type='LoadAnnotations', with_bbox=True, with_rbbox=True),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='Pointobb2RBBox', encoding_method='thetaobb'),
+    dict(type='Pointobb2RBBox', encoding_method='pointobb'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -193,7 +201,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/theta_obb_r50_fpn_1x_dota'
+work_dir = './work_dirs/dota_v003_point_obb_r50_v1_train'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

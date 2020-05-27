@@ -147,7 +147,7 @@ class DOTADataset(CocoDataset):
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
             seg_map=seg_map,
-            rbboxes=gt_rbboxes)
+            rbboxes=gt_rbboxes,
             heatmap_weight=heatmap_weight)
 
         return ann

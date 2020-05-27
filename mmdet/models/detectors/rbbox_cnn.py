@@ -1,15 +1,18 @@
 import torch
 import torch.nn as nn
+import numpy as np
+import cv2
+import wwtool
 
-from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
+from mmdet.core import bbox2result, rbbox2result, bbox2roi, build_assigner, build_sampler, tensor2imgs, get_classes
 from .. import builder
 
 from ..registry import DETECTORS
 from .two_stage import TwoStageDetector
-
+from .test_mixins import RBBoxTestMixin
 
 @DETECTORS.register_module
-class RBBoxRCNN(TwoStageDetector):
+class RBBoxRCNN(TwoStageDetector, RBBoxTestMixin):
 
     def __init__(self,
                  backbone,
@@ -198,10 +201,163 @@ class RBBoxRCNN(TwoStageDetector):
             cls_score, rbbox_pred = self.rbbox_head(rbbox_feats)
 
             rbbox_targets = self.rbbox_head.get_target(sampling_results,
-                                                     gt_rbboxes, gt_labels,
-                                                     self.train_cfg.rcnn)
+                                                     gt_rbboxes, 
+                                                     gt_labels,
+                                                     self.test_cfg.rbbox)
             loss_rbbox = self.rbbox_head.loss(cls_score, rbbox_pred,
                                             *rbbox_targets)
             losses.update(loss_rbbox)
 
         return losses
+
+
+    def simple_test(self, img, img_meta, proposals=None, rescale=False):
+        """Test without augmentation."""
+        assert self.with_bbox, "Bbox head must be implemented."
+
+        x = self.extract_feat(img)
+        
+        proposal_list = self.simple_test_rpn(
+            x, img_meta, self.test_cfg.rpn) if proposals is None else proposals
+
+        det_bboxes, det_labels, bbox_cls_inds, bbox_keep_inds = self.simple_test_bboxes_with_rbbox(
+            x, img_meta, proposal_list, self.test_cfg.rcnn, rescale=rescale, rbbox=True)
+        bbox_results = bbox2result(det_bboxes, 
+                                   det_labels,
+                                   self.bbox_head.num_classes)
+
+        if not self.with_rbbox:
+            return bbox_results
+        else:
+            if self.test_cfg.rbbox.parallel:
+                det_rbboxes, det_labels = self.simple_test_rbbox_parallel(
+                    x, 
+                    img_meta, 
+                    proposal_list, 
+                    self.test_cfg.rbbox, 
+                    rescale=rescale,
+                    bbox_cls_inds=bbox_cls_inds, 
+                    bbox_keep_inds=bbox_keep_inds)
+                rbbox_results = rbbox2result(det_rbboxes, 
+                                             det_labels,
+                                             self.bbox_head.num_classes)
+            else:
+                rbbox_results = self.simple_test_rbbox_serial(
+                    x, 
+                    img_meta, 
+                    det_bboxes, 
+                    det_labels, 
+                    rescale=rescale, 
+                    num_classes=self.rbbox_head.num_classes)
+            
+            return bbox_results, rbbox_results
+
+    def aug_test(self, imgs, img_metas, rescale=False):
+        """Test with augmentations.
+
+        If rescale is False, then returned bboxes and masks will fit the scale
+        of imgs[0].
+        """
+        # recompute feats to save memory
+        proposal_list = self.aug_test_rpn(
+            self.extract_feats(imgs), img_metas, self.test_cfg.rpn)
+        det_bboxes, det_labels = self.aug_test_bboxes(
+            self.extract_feats(imgs), img_metas, proposal_list,
+            self.test_cfg.rcnn)
+
+        if rescale:
+            _det_bboxes = det_bboxes
+        else:
+            _det_bboxes = det_bboxes.clone()
+            _det_bboxes[:, :4] *= img_metas[0][0]['scale_factor']
+        bbox_results = bbox2result(_det_bboxes, det_labels,
+                                   self.bbox_head.num_classes)
+
+        # det_bboxes always keep the original scale
+        if self.with_thetaobb:
+            segm_results = self.aug_test_thetaobb(
+                self.extract_feats(imgs), img_metas, det_bboxes, det_labels)
+            return bbox_results, segm_results
+        else:
+            return bbox_results
+
+    def show_result(self, 
+                    data, 
+                    result, 
+                    dataset=None, 
+                    score_thr=0.5, 
+                    out_file=None,
+                    show_flag=0,
+                    thickness=2):
+        # RGB
+        DOTA_COLORS = {'harbor': (60, 180, 75), 'ship': (230, 25, 75), 'small-vehicle': (255, 225, 25), 'large-vehicle': (245, 130, 200), 
+        'storage-tank': (230, 190, 255), 'plane': (245, 130, 48), 'soccer-ball-field': (0, 0, 128), 'bridge': (255, 250, 200), 
+        'baseball-diamond': (240, 50, 230), 'tennis-court': (70, 240, 240), 'helicopter': (0, 130, 200), 'roundabout': (170, 255, 195), 
+        'swimming-pool': (250, 190, 190), 'ground-track-field': (170, 110, 40), 'basketball-court': (0, 128, 128)}
+        
+        if isinstance(result, tuple):
+            bbox_result, rbbox_result = result
+        else:
+            bbox_result, rbbox_result = result, None
+
+        if isinstance(data, dict):
+            img_tensor = data['img'][0]
+            img_metas = data['img_metas'][0].data[0]
+            imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+            assert len(imgs) == len(img_metas)
+        else:
+            imgs = [mmcv.imread(data)]
+            img_metas = [{'img_shape': imgs[0].shape}]
+
+        if dataset is None:
+            class_names = self.CLASSES
+        elif isinstance(dataset, str):
+            class_names = get_classes(dataset)
+        elif isinstance(dataset, (list, tuple)):
+            class_names = dataset
+        else:
+            raise TypeError(
+                'dataset must be a valid dataset name or a sequence'
+                ' of class names, not {}'.format(type(dataset)))
+        
+        for img, img_meta in zip(imgs, img_metas):
+            h, w, _ = img_meta['img_shape']
+            img_show = img[:h, :w, :]
+
+            bboxes = np.vstack(bbox_result)
+            
+            labels = [
+                np.full(bbox.shape[0], i, dtype=np.int32)
+                for i, bbox in enumerate(bbox_result)
+            ]
+            labels = np.concatenate(labels)
+            colors = [DOTA_COLORS[class_names[label]][::-1] for label in labels]
+
+            # draw segmentation masks
+            if rbbox_result is not None and (show_flag == 2 or show_flag == 0):
+                rbboxes = np.vstack(rbbox_result)
+                
+                inds = np.where(bboxes[:, -1] > score_thr)[0]
+                for ind in inds:
+                    rbbox = rbboxes[ind]
+                    if self.test_cfg.rbbox.encode == 'thetaobb':
+                        img_show = wwtool.show_thetaobb(img_show, rbbox[:-1], color=colors[ind])
+                    elif self.test_cfg.rbbox.encode == 'pointobb':
+                        img_show = wwtool.show_pointobb(img_show, rbbox[:-1], color=colors[ind])
+                    elif self.test_cfg.rbbox.encode == 'hobb':
+                        img_show = wwtool.show_hobb(img_show, rbbox[:-1], color=colors[ind])
+            
+            scores = bboxes[:, -1]
+            inds = scores > score_thr
+            labels = labels[inds]
+            bboxes = bboxes[inds, :]
+            # draw bounding boxes
+            if (show_flag == 2 or show_flag == 1):
+                for idx, (bbox, label) in enumerate(zip(bboxes, labels)):
+                    bbox_int = bbox.astype(np.int32)
+                    left_top = (bbox_int[0], bbox_int[1])
+                    right_bottom = (bbox_int[2], bbox_int[3])
+                    cv2.rectangle(
+                        img_show, left_top, right_bottom, colors[idx], thickness=thickness)
+
+        wwtool.show_image(img_show, win_size=800, save_name=out_file)
