@@ -45,8 +45,8 @@ def rbbox_target_single(pos_proposals,
                         target_stds,
                         out_dim_reg=5):
     rbbox2delta = {"thetaobb": thetaobb2delta,
-                    "pointobb": pointobb2delta,
-                    "hobb": hobb2delta}
+                   "pointobb": pointobb2delta,
+                   "hobb": hobb2delta}
     num_pos = pos_proposals.size(0)
     num_neg = neg_proposals.size(0)
     num_samples = num_pos + num_neg

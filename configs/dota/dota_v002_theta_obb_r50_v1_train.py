@@ -166,17 +166,20 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_trainval_{}_{}_best_keypoint.json'.format(dataset_version, train_rate),
         img_prefix=data_root + 'trainval/',
-        pipeline=train_pipeline),
+        pipeline=train_pipeline,
+        encode='thetaobb'),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
-        pipeline=test_pipeline),
+        pipeline=test_pipeline,
+        encode='thetaobb'),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
-        img_prefix=data_root + 'test/',
-        pipeline=test_pipeline))
+        ann_file=data_root + 'annotations/dota_evaluation_sample_v1_best_keypoint.json',
+        img_prefix=data_root + 'evaluation_sample/',
+        pipeline=test_pipeline,
+        encode='thetaobb'))
 evaluation = dict(interval=1, metric='bbox')
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)

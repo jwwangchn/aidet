@@ -249,7 +249,7 @@ class RBBoxRCNN(TwoStageDetector, RBBoxTestMixin):
                     det_labels, 
                     rescale=rescale, 
                     num_classes=self.rbbox_head.num_classes)
-            
+
             return bbox_results, rbbox_results
 
     def aug_test(self, imgs, img_metas, rescale=False):
