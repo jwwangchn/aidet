@@ -199,7 +199,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/dota_v001_mask_obb_r50_v1_train'
+work_dir = './work_dirs/dota_v002_theta_obb_r50_v1_train'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
