@@ -13,7 +13,7 @@ def parse_args():
     parser = parser = argparse.ArgumentParser(description='DOTA Testing')
     parser.add_argument('--dataset', default='dota', help='dataset name')
     parser.add_argument('--dataset_version', default='v1', help='dataset name')
-    parser.add_argument('--config_version', default='mask_rcnn_r50_fpn_1x_dota', help='version of experiments (DATASET_V#NUM)')
+    parser.add_argument('--config_version', default='centermap_net_r50_fpn_1x_dota', help='version of experiments (DATASET_V#NUM)')
     parser.add_argument('--imageset', default='test', help='imageset of evaluation')
     parser.add_argument('--epoch', default=12, help='epoch')
     parser.add_argument('--show', action='store_true', help='show flag')
@@ -46,5 +46,4 @@ if __name__ == "__main__":
         bboxes = np.vstack(bbox_result)
         if len(bboxes) == 0:
             continue
-        show_result(img, (bbox_result, segm_result), model.CLASSES, score_thr=0.5)
-        # wwtool.imshow_bboxes(img, bbox_result[0][:, 0:-1], show=True)
+        model.show_result(img, (bbox_result, segm_result), 'dota', score_thr=0.05, show_flag=0, thickness=2)

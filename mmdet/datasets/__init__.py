@@ -9,10 +9,11 @@ from .voc import VOCDataset
 from .wider_face import WIDERFaceDataset
 from .xml_style import XMLDataset
 from .dota import DOTADataset
+from .buildchange import BuildChangeDataset
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'VOCDataset',
     'CityscapesDataset', 'GroupSampler', 'DistributedGroupSampler',
     'DistributedSampler', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',
-    'WIDERFaceDataset', 'DATASETS', 'build_dataset', 'DOTADataset'
+    'WIDERFaceDataset', 'DATASETS', 'build_dataset', 'DOTADataset', 'BuildChangeDataset'
 ]

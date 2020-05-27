@@ -3,6 +3,7 @@ import numpy as np
 import pycocotools.mask as mask_util
 import torch
 
+import wwtool
 from mmdet.core import mask_target
 
 from ..registry import HEADS
@@ -15,14 +16,18 @@ class CenterMapHead(FCNMaskHead):
     def __init__(self, with_conv_res=True, *args, **kwargs):
         super(CenterMapHead, self).__init__(*args, **kwargs)
 
-    def loss(self, mask_pred, mask_targets, labels):
+    def loss(self, mask_pred, mask_targets, labels, mask_weights):
         mask_targets = mask_targets / 255.0
+        if mask_weights is not None:
+            mask_weights = mask_weights / 255.0 + 1.0
         loss = dict()
         if self.class_agnostic:
-            loss_mask = self.loss_mask(mask_pred, mask_targets,
-                                       torch.zeros_like(labels))
+            loss_mask = self.loss_mask(mask_pred, 
+                                       mask_targets,
+                                       torch.zeros_like(labels),
+                                       mask_weights=mask_weights)
         else:
-            loss_mask = self.loss_mask(mask_pred, mask_targets, labels)
+            loss_mask = self.loss_mask(mask_pred, mask_targets, labels, mask_weights=mask_weights)
         loss['loss_mask'] = loss_mask
         return loss
 
@@ -76,9 +81,14 @@ class CenterMapHead(FCNMaskHead):
                 mask_pred_ = mask_pred[i, 0, :, :]
 
             bbox_mask = mmcv.imresize(mask_pred_, (w, h))
+            
+            # visualization
+            # bbox_mask_ = np.pad(bbox_mask, ((25, 25), (25, 25)), 'constant', constant_values = (0, 0))
+            # wwtool.show_grayscale_as_heatmap(bbox_mask_)
+
             bbox_mask = (bbox_mask > rcnn_test_cfg.mask_thr_binary).astype(
                 np.uint8)
-
+                
             if rcnn_test_cfg.get('crop_mask', False):
                 im_mask = bbox_mask
             else:
