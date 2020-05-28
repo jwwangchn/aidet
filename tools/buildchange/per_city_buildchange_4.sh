@@ -37,7 +37,7 @@ do
         echo "==== start 4 GPU coco test, mode name = ${model} ===="
         mkdir -p results/${dataset}/${model}
 
-        ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model} --evaluation_city city
+        ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model} --evaluation_city ${city}
     elif [ $2 == 2 ]
     then
         echo "==== start 1 GPU coco test, mode name = ${model} ===="
