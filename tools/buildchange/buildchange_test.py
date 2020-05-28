@@ -125,7 +125,6 @@ def main():
         cfg.data.test.ann_file = cfg.data.test.ann_file.replace(cfg.city, args.evaluation_city)
         cfg.data.test.img_prefix = cfg.data.test.img_prefix.replace(cfg.city, args.evaluation_city)
     
-    print("====================", args.evaluation_city, cfg.data.test)
     dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,
