@@ -49,6 +49,8 @@ if __name__ == "__main__":
 
     firstfile = True
     for img_name in img_list:
+        if 'L18_106968_219512' not in img_name:
+            continue
         image_basename = wwtool.get_basename(img_name)
         origin_image_name = "_".join(image_basename.split('__')[0].split('_')[1:])
         if origin_image_name not in image_name_list:
