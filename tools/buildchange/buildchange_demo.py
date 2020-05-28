@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--dataset', default='buildchange', help='dataset name')
     parser.add_argument('--dataset_version', default='v2', help='dataset version')
     parser.add_argument('--city', default='shanghai', help='city name')
-    parser.add_argument('--config_version', default='bc_v002_mask_rcnn_r50_v2_jinan_roof', help='version of experiments (DATASET_V#NUM)')
+    parser.add_argument('--config_version', default='bc_v004_mask_rcnn_r50_v2_shanghai_roof', help='version of experiments (DATASET_V#NUM)')
     parser.add_argument('--imageset', default='val', help='imageset of evaluation')
     parser.add_argument('--epoch', default=12, help='epoch')
     parser.add_argument('--show', action='store_true', help='show flag')
