@@ -187,35 +187,29 @@ test_pipeline = [
         ])
 ]
 # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-cities = ['jinan']
+city = 'jinan'
 sub_city_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                   'chengdu': ['arg', 'google', 'ms', 'tdt'],
                   'haerbin': ['arg', 'google', 'ms'],
                   'jinan': ['arg', 'google', 'ms', 'tdt'],
                   'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
-train_ann_file = []
-img_prefix = []
-for city in cities:
-    for sub_fold in sub_city_folds[city]:
-        train_ann_file.append(data_root + 'annotations/buildchange_v2_train_{}_{}.json'.format(city, sub_fold))
-    img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=2,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
-        ann_file=train_ann_file,
-        img_prefix=img_prefix,
+        ann_file=data_root + 'annotations/buildchange_v2_train_{}.json'.format(city),
+        img_prefix=data_root + '../' + "{}/images/".format(city),
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/buildchange_v2_val_jinan.json',
-        img_prefix=data_root + '../' + "jinan/images/",
+        ann_file=data_root + 'annotations/buildchange_v2_val_{}.json'.format(city),
+        img_prefix=data_root + '../' + "{}/images/".format(city),
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/buildchange_v2_val_jinan.json',
-        img_prefix=data_root + '../' + "jinan/images/",
+        ann_file=data_root + 'annotations/buildchange_v2_val_{}.json'.format(city),
+        img_prefix=data_root + '../' + "{}/images/".format(city),
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
