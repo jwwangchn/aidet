@@ -14,6 +14,6 @@ if __name__ == "__main__":
         ann = f'data/buildchange/v2/coco/annotations/buildchange_v2_val_{city}.json'
         out_dir = f'results/buildchange/{model}/analysis'
 
-        analyze_results(result, ann, 'segm', out_dir)
+        analyze_results(result, ann, ['segm'], out_dir)
 
         print(result)
