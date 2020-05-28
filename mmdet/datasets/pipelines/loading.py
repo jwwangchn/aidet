@@ -86,6 +86,7 @@ class LoadAnnotations(object):
                  with_mask=False,
                  with_seg=False,
                  with_mask_weight=False,
+                 with_reverse_mask_weight=False,
                  with_heatmap_weight=False,
                  poly2mask=True,
                  poly2centermap=False,
@@ -99,6 +100,7 @@ class LoadAnnotations(object):
         self.with_mask = with_mask
         self.with_seg = with_seg
         self.with_mask_weight = with_mask_weight
+        self.with_reverse_mask_weight = with_reverse_mask_weight
         self.with_heatmap_weight = with_heatmap_weight
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
@@ -110,10 +112,17 @@ class LoadAnnotations(object):
         self.anchor_centermaps = {'centerness': self.centerness_image,
                                   'gaussian': None,
                                   'ellipse': None}
-        self.anchor_mask_weight = 255 - wwtool.generate_centerness_image(height=anchor_centermap_scale, 
-                                                                   width=anchor_centermap_scale, 
-                                                                   factor=centermap_factor,
-                                                                   threshold = 0)
+        assert (with_mask_weight and with_reverse_mask_weight) == False
+        if with_mask_weight:
+            self.anchor_mask_weight = 255 - wwtool.generate_centerness_image(height=anchor_centermap_scale, 
+                                                                    width=anchor_centermap_scale, 
+                                                                    factor=centermap_factor,
+                                                                    threshold = 0)
+        elif with_reverse_mask_weight:
+            self.anchor_mask_weight = wwtool.generate_centerness_image(height=anchor_centermap_scale, 
+                                                                    width=anchor_centermap_scale, 
+                                                                    factor=centermap_factor,
+                                                                    threshold = 0)
         self.show = show
 
     def _load_bboxes(self, results):
@@ -224,7 +233,7 @@ class LoadAnnotations(object):
             results = self._load_masks(results)
         if self.with_seg:
             results = self._load_semantic_seg(results)
-        if self.with_mask_weight:
+        if self.with_mask_weight or self.with_reverse_mask_weight:
             results = self._load_mask_weights(results)
         if self.with_heatmap_weight:
             results = self._load_heatmap_weight(results)
