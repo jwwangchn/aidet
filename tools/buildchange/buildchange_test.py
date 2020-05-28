@@ -83,6 +83,7 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
+    parser.add_argument('--evaluation_city', default=None, help='evaluation city')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -120,6 +121,11 @@ def main():
 
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
+    if args.evaluation_city:
+        cfg.data.test.ann_file = cfg.data.test.ann_file.replace(cfg.city, args.evaluation_city)
+        cfg.data.test.img_prefix = cfg.data.test.img_prefix.replace(cfg.city, args.evaluation_city)
+    
+    print("====================", args.evaluation_city, cfg.data.test)
     dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,
