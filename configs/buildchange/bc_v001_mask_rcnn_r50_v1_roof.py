@@ -151,7 +151,6 @@ sub_city_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                   'jinan': ['arg', 'google', 'ms', 'tdt'],
                   'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
 train_ann_file = []
-val_ann_file = []
 img_prefix = []
 for city in cities:
     train_ann_file.append(data_root + 'annotations/buildchange_v2_train_{}.json'.format(city))

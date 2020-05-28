@@ -50,21 +50,6 @@ do
         echo "==== skip inference, mode name = ${model} ===="
     fi
 
-    #------------------------------error analysis-----------------------------------
-    if [ $3 == 1 ]
-    then
-        echo "==== error analysis, mode name = ${model} ===="
-        mkdir -p results/${dataset}/${model}/analysis
-
-        python tools/buildchange/coco_error_analysis.py $(pwd)/results/${dataset}/${model}/${model}.segm.json results/${dataset}/${model}/analysis --ann data/${dataset}/v2/coco/annotations/buildchange_v2_val_{}.json
-    elif [ $3 == 0 ]
-    then
-        # read the results file
-        echo "==== skip error analysis, mode name = ${model} ===="
-    fi
-
-
-
     # send the notification email
     # cd ../wwtool
     # python tools/utils/send_email.py
