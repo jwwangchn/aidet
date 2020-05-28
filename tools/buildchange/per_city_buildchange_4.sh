@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-for model in 'bc_v003_mask_rcnn_r50_v2_chengdu_roof' 'bc_v004_mask_rcnn_r50_v2_shanghai_roof' 'bc_v005_mask_rcnn_r50_v2_beijing_roof' 'bc_v006_mask_rcnn_r50_v2_haerbin_roof'
+for model in 'bc_v004_mask_rcnn_r50_v2_shanghai_roof' 'bc_v005_mask_rcnn_r50_v2_beijing_roof' 'bc_v006_mask_rcnn_r50_v2_haerbin_roof'
 do
     for city in 'jinan' 'chengdu' 'beijing' 'shanghai' 'haerbin' 
     do
@@ -31,7 +31,6 @@ do
             # skip training
             echo "==== skip training ===="
         fi
-
 
         #------------------------------inference and eval-----------------------------------
         if [ $2 == 1 ]
