@@ -200,5 +200,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/bc_v001_mask_rcnn_r50_v1_roof'
 load_from = None
-resume_from = None
+resume_from = './work_dirs/bc_v001_mask_rcnn_r50_v1_roof/epoch_10.pth'
 workflow = [('train', 1)]
