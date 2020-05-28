@@ -6,6 +6,7 @@ import wwtool
 import pandas as pd
 import argparse
 import pycocotools.mask as maskUtils
+import wwtool
 
 from mmdet.apis import init_detector, inference_detector, show_result
 
@@ -30,6 +31,7 @@ if __name__ == "__main__":
     checkpoint_file = './work_dirs/{}/epoch_{}.pth'.format(args.config_version, args.epoch)
     img_dir = './data/{}/{}/{}/images'.format(args.dataset, args.dataset_version, args.city)
     save_dir = f'results/buildchange/{args.config_version}/{args.city}/vis/'
+    wwtool.mkdir_or_exist(save_dir)
 
     print(config_file)
     model = init_detector(config_file, checkpoint_file, device='cuda:0')
