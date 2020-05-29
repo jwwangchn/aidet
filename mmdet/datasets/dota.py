@@ -123,7 +123,6 @@ class DOTADataset(CocoDataset):
             else:
                 gt_bboxes.append(bbox)
                 gt_labels.append(self.cat2label[ann['category_id']])
-                gt_masks_ann.append(ann['pointobb'])
                 gt_rbboxes.append(ann['pointobb'])
                 gt_masks_ann.append([ann['pointobb']])
 
