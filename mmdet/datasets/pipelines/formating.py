@@ -129,9 +129,14 @@ class DefaultFormatBundle(object):
             results[key] = DC(to_tensor(results[key]))
         if 'gt_masks' in results:
             results['gt_masks'] = DC(results['gt_masks'], cpu_only=True)
+        if 'gt_mask_weights' in results:
+            results['gt_mask_weights'] = DC(results['gt_mask_weights'], cpu_only=True)
         if 'gt_semantic_seg' in results:
             results['gt_semantic_seg'] = DC(
                 to_tensor(results['gt_semantic_seg'][None, ...]), stack=True)
+        if 'gt_heatmap_weight' in results:
+            results['gt_heatmap_weight'] = DC(
+                to_tensor(results['gt_heatmap_weight'][None, ...]), stack=True)
         return results
 
     def __repr__(self):
