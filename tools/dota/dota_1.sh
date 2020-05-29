@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v002_theta_obb_r50_v1_train'
-evaluation_set='test'
+model='dota_v004_h_obb_r50_v1_train'
+evaluation_set='evaluation_sample'
 epoch=12
 dataset='dota'
 
@@ -42,7 +42,7 @@ then
     export CUDA_VISIBLE_DEVICES=0
     mkdir -p results/${dataset}/${model}
 
-    python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model} --show
+    python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
 elif [ $2 == 3 ]
 then
     echo "==== start 1 GPU (evaluation sample) test, mode name = ${model} ===="

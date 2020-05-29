@@ -25,10 +25,14 @@ from wwtool.datasets.dota import mergebypoly, mergebypoly_mp, mergebyrec, mergeb
 
 @DATASETS.register_module
 class DOTADataset(CocoDataset):
-
     CLASSES = ('harbor', 'ship', 'small-vehicle', 'large-vehicle', 'storage-tank', 'plane', 'soccer-ball-field', 'bridge', 'baseball-diamond', 'tennis-court', 'helicopter', 'roundabout', 'swimming-pool', 'ground-track-field', 'basketball-court')
 
     CLASSES_OFFICIAL = ('plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court', 'basketball-court', 'storage-tank',  'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool', 'helicopter')
+
+    # old model, just for rbbox
+    CLASSES_OLD = ('ship', 'harbor', 'small-vehicle', 'large-vehicle', 'plane', 'soccer-ball-field', 'tennis-court', 'baseball-diamond', 'roundabout', 'swimming-pool', 'basketball-court', 'storage-tank', 'ground-track-field', 'helicopter', 'bridge')
+    TRANS_TABLE = {0:1, 1:0, 2:2, 3:3, 4:5, 5:6, 6:9, 7:8, 8:11, 9:12, 10:14, 11:4, 12:13, 13:10, 14:7}
+
 
     def __init__(self,
                  ann_file,
@@ -173,6 +177,7 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
+                    print(label)
                     data['category_id'] = self.cat_ids[label]
                     data['bbox'] = bbox[:-1].tolist()
                     segm['counts'] = segm['counts'].decode()
@@ -203,7 +208,7 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
-                    data['category_id'] = self.cat_ids[label]
+                    data['category_id'] = self.cat_ids[DOTADataset.TRANS_TABLE[label]]
                     data['bbox'] = bbox[:-1].tolist()
                     
                     if self.encode == 'thetaobb':

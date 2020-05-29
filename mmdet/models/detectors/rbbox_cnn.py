@@ -289,6 +289,10 @@ class RBBoxRCNN(TwoStageDetector, RBBoxTestMixin):
                     out_file=None,
                     show_flag=0,
                     thickness=2):
+        # used by the old model
+        CLASSES_OLD = ('ship', 'harbor', 'small-vehicle', 'large-vehicle', 'plane', 'soccer-ball-field', 'tennis-court', 'baseball-diamond', 'roundabout', 'swimming-pool', 'basketball-court', 'storage-tank', 'ground-track-field', 'helicopter', 'bridge')
+        TRANS_TABLE = {0:1, 1:0, 2:2, 3:3, 4:5, 5:6, 6:9, 7:8, 8:11, 9:12, 10:14, 11:4, 12:13, 13:10, 14:7}
+
         # RGB
         DOTA_COLORS = {'harbor': (60, 180, 75), 'ship': (230, 25, 75), 'small-vehicle': (255, 225, 25), 'large-vehicle': (245, 130, 200), 
         'storage-tank': (230, 190, 255), 'plane': (245, 130, 48), 'soccer-ball-field': (0, 0, 128), 'bridge': (255, 250, 200), 
@@ -331,7 +335,7 @@ class RBBoxRCNN(TwoStageDetector, RBBoxTestMixin):
                 for i, bbox in enumerate(bbox_result)
             ]
             labels = np.concatenate(labels)
-            colors = [DOTA_COLORS[class_names[label]][::-1] for label in labels]
+            colors = [DOTA_COLORS[class_names[TRANS_TABLE[label]]][::-1] for label in labels]
 
             # draw segmentation masks
             if rbbox_result is not None and (show_flag == 2 or show_flag == 0):
