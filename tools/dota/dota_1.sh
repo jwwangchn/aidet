@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v004_h_obb_r50_v1_train'
+model='dota_v002_theta_obb_r50_v1_train'
 evaluation_set='test'
 epoch=12
 dataset='dota'

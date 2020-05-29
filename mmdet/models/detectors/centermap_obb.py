@@ -453,9 +453,9 @@ class CenterMapOBB(TwoStageDetector):
                     data, 
                     result, 
                     dataset=None, 
-                    score_thr=0.3, 
+                    score_thr=0.5, 
                     out_file=None,
-                    show_flag=None,
+                    show_flag=0,
                     thickness=2):
         # RGB
         DOTA_COLORS = {'harbor': (60, 180, 75), 'ship': (230, 25, 75), 'small-vehicle': (255, 225, 25), 'large-vehicle': (245, 130, 200), 
