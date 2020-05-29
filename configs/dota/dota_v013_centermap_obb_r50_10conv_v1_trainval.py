@@ -1,3 +1,13 @@
+"""
+Evaluating in DOTA hbb Task
+mAP: 72.66
+class metrics: {'Task': 'hbb', 'plane': 88.56, 'baseball-diamond': 80.5, 'bridge': 54.28, 'ground-track-field': 62.25, 'small-vehicle': 78.36, 'large-vehicle': 77.71, 'ship': 85.62, 'tennis-court': 89.58, 'basketball-court': 77.49, 'storage-tank': 81.27, 'soccer-ball-field': 47.45, 'roundabout': 64.05, 'harbor': 72.28, 'swimming-pool': 70.65, 'helicopter': 59.81}
+
+Evaluating in DOTA obb Task
+mAP: 71.47
+class metrics: {'Task': 'obb', 'plane': 88.67, 'baseball-diamond': 80.07, 'bridge': 50.05, 'ground-track-field': 62.46, 'small-vehicle': 78.14, 'large-vehicle': 74.07, 'ship': 86.11, 'tennis-court': 90.11, 'basketball-court': 77.56, 'storage-tank': 80.85, 'soccer-ball-field': 47.51, 'roundabout': 61.49, 'harbor': 65.08, 'swimming-pool': 66.61, 'helicopter': 63.28}
+
+"""
 # model settings
 model = dict(
     type='CenterMapOBB',
