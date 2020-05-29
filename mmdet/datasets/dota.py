@@ -176,7 +176,6 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
-                    print(label)
                     data['category_id'] = self.cat_ids[label]
                     data['bbox'] = bbox[:-1].tolist()
                     segm['counts'] = segm['counts'].decode()
@@ -380,7 +379,7 @@ class DOTADataset(CocoDataset):
             # loading results from pkl file
             results = mmcv.load(results)
         # save coco result
-        # self.format_results(results, jsonfile_prefix)
+        self.format_results(results, jsonfile_prefix)
 
         if PR_path:
             mmcv.mkdir_or_exist(PR_path)

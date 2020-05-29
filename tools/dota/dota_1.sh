@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_obb_r50_fpn_1x_dota_mask_weight'
-evaluation_set='test'
+model='mask_obb_tgrs'
+evaluation_set='evaluation_sample'
 epoch=12
 dataset='dota'
 
