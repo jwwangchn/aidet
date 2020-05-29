@@ -1,28 +1,14 @@
 """
-IOU = 0.5
-Task	baseball-diamond	basketball-court	bridge	ground-track-field	harbor	helicopter	large-vehicle	mAP	plane	roundabout	ship	small-vehicle	soccer-ball-field	storage-tank	swimming-pool	tennis-court
-hbb	85.09	84.43	59.92	69.43	79.38	64.8	80.69	77.44	89.79	69.1	86.6	79.14	56.44	86.12	80.55	90.16
-obb	84.74	84.96	54.47	70.38	73.76	66.06	79.54	76.23	89.89	69.16	87.18	78.39	57.58	85.34	71.53	90.45
-
-
-IOU=0.7
-Evaluating in DOTA hbb Task
-mAP: 62.26
-class metrics: {'Task': 'hbb', 'plane': 84.86, 'baseball-diamond': 70.54, 'bridge': 36.18, 'ground-track-field': 64.27, 'small-vehicle': 67.77, 'large-vehicle': 71.17, 'ship': 76.64, 'tennis-court': 88.95, 'basketball-court': 77.5, 'storage-tank': 75.29, 'soccer-ball-field': 47.81, 'roundabout': 45.32, 'harbor': 60.02, 'swimming-pool': 33.75, 'helicopter': 33.83}
-
-Evaluating in DOTA obb Task
-mAP: 54.13
-class metrics: {'Task': 'obb', 'plane': 79.46, 'baseball-diamond': 61.22, 'bridge': 20.28, 'ground-track-field': 62.23, 'small-vehicle': 47.59, 'large-vehicle': 54.89, 'ship': 63.03, 'tennis-court': 89.56, 'basketball-court': 78.38, 'storage-tank': 74.09, 'soccer-ball-field': 50.44, 'roundabout': 43.73, 'harbor': 41.36, 'swimming-pool': 18.36, 'helicopter': 27.39}
 
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
 model = dict(
     type='CenterMapOBB',
-    pretrained='torchvision://resnet101',
+    pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
-        depth=101,
+        depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
