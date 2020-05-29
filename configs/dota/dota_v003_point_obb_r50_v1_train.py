@@ -1,3 +1,13 @@
+"""
+Evaluating in DOTA hbb Task
+mAP: 54.06
+class metrics: {'Task': 'hbb', 'plane': 77.54, 'baseball-diamond': 58.24, 'bridge': 30.43, 'ground-track-field': 51.29, 'small-vehicle': 66.23, 'large-vehicle': 69.63, 'ship': 74.83, 'tennis-court': 89.97, 'basketball-court': 68.24, 'storage-tank': 65.53, 'soccer-ball-field': 30.44, 'roundabout': 33.01, 'harbor': 48.18, 'swimming-pool': 28.89, 'helicopter': 18.42}
+
+Evaluating in DOTA obb Task
+mAP: 44.51
+class metrics: {'Task': 'obb', 'plane': 76.39, 'baseball-diamond': 49.11, 'bridge': 21.51, 'ground-track-field': 44.08, 'small-vehicle': 58.21, 'large-vehicle': 54.41, 'ship': 63.5, 'tennis-court': 89.26, 'basketball-court': 36.76, 'storage-tank': 64.26, 'soccer-ball-field': 26.48, 'roundabout': 15.37, 'harbor': 29.31, 'swimming-pool': 16.17, 'helicopter': 22.85}
+
+"""
 # model settings
 model = dict(
     type='RBBoxRCNN',

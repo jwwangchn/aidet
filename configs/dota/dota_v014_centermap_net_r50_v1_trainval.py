@@ -1,19 +1,28 @@
 """
+IOU = 0.5
+Task	baseball-diamond	basketball-court	bridge	ground-track-field	harbor	helicopter	large-vehicle	mAP	plane	roundabout	ship	small-vehicle	soccer-ball-field	storage-tank	swimming-pool	tennis-court
+hbb	85.09	84.43	59.92	69.43	79.38	64.8	80.69	77.44	89.79	69.1	86.6	79.14	56.44	86.12	80.55	90.16
+obb	84.74	84.96	54.47	70.38	73.76	66.06	79.54	76.23	89.89	69.16	87.18	78.39	57.58	85.34	71.53	90.45
+
+
+IOU=0.7
 Evaluating in DOTA hbb Task
-mAP: 54.94
-class metrics: {'Task': 'hbb', 'plane': 77.42, 'baseball-diamond': 58.42, 'bridge': 27.08, 'ground-track-field': 53.63, 'small-vehicle': 66.15, 'large-vehicle': 68.7, 'ship': 74.45, 'tennis-court': 89.53, 'basketball-court': 68.45, 'storage-tank': 66.16, 'soccer-ball-field': 31.95, 'roundabout': 39.91, 'harbor': 50.32, 'swimming-pool': 26.49, 'helicopter': 25.45}
+mAP: 62.26
+class metrics: {'Task': 'hbb', 'plane': 84.86, 'baseball-diamond': 70.54, 'bridge': 36.18, 'ground-track-field': 64.27, 'small-vehicle': 67.77, 'large-vehicle': 71.17, 'ship': 76.64, 'tennis-court': 88.95, 'basketball-court': 77.5, 'storage-tank': 75.29, 'soccer-ball-field': 47.81, 'roundabout': 45.32, 'harbor': 60.02, 'swimming-pool': 33.75, 'helicopter': 33.83}
 
 Evaluating in DOTA obb Task
-mAP: 35.96
-class metrics: {'Task': 'obb', 'plane': 75.07, 'baseball-diamond': 44.32, 'bridge': 8.89, 'ground-track-field': 38.32, 'small-vehicle': 43.92, 'large-vehicle': 29.23, 'ship': 41.36, 'tennis-court': 89.33, 'basketball-court': 23.75, 'storage-tank': 65.24, 'soccer-ball-field': 30.18, 'roundabout': 4.9, 'harbor': 22.01, 'swimming-pool': 12.74, 'helicopter': 10.11}
+mAP: 54.13
+class metrics: {'Task': 'obb', 'plane': 79.46, 'baseball-diamond': 61.22, 'bridge': 20.28, 'ground-track-field': 62.23, 'small-vehicle': 47.59, 'large-vehicle': 54.89, 'ship': 63.03, 'tennis-court': 89.56, 'basketball-court': 78.38, 'storage-tank': 74.09, 'soccer-ball-field': 50.44, 'roundabout': 43.73, 'harbor': 41.36, 'swimming-pool': 18.36, 'helicopter': 27.39}
+
 """
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
 model = dict(
-    type='RBBoxRCNN',
-    pretrained='torchvision://resnet50',
+    type='CenterMapOBB',
+    pretrained='torchvision://resnet101',
     backbone=dict(
         type='ResNet',
-        depth=50,
+        depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
@@ -54,26 +63,37 @@ model = dict(
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
-    rbbox_roi_extractor=dict(
+    mask_roi_extractor=dict(
         type='SingleRoIExtractor',
-        roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
+        roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
-    rbbox_head=dict(
-        type='RBBoxHead',
-        num_shared_fcs=2,
+    mask_head=dict(
+        type='CenterMapHead',
+        num_convs=10,
         in_channels=256,
-        fc_out_channels=1024,
-        roi_feat_size=7,
+        conv_out_channels=256,
         num_classes=16,
-        out_dim_reg=5,
-        target_means=[0., 0., 0., 0., 0.],
-        target_stds=[0.1, 0.1, 0.1, 0.1, 0.1],
-        reg_class_agnostic=False,
-        encode='hobb',
-        loss_rbbox_cls=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-        loss_rbbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
+        loss_mask=dict(
+            type='CenterMapLoss', use_mask_weight=True, use_mask=False, loss_weight=3.0)),
+    semantic_roi_extractor=dict(
+        type='SingleRoIExtractor',
+        roi_layer=dict(type='RoIAlign', out_size=14, sample_num=2),
+        out_channels=256,
+        featmap_strides=[4]),
+    semantic_head=dict(
+        type='WeightedPseudoSegmentationHead',
+        num_convs=1,
+        in_channels=256,
+        inside_channels=128,
+        conv_out_channels=256,
+        num_classes=16,
+        ignore_label=255,
+        loss_weight=1.0,
+        use_focal_loss=True,
+        with_background_reweight=True,
+        reweight_version='v1',
+        norm_cfg=norm_cfg))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -82,7 +102,8 @@ train_cfg = dict(
             pos_iou_thr=0.7,
             neg_iou_thr=0.3,
             min_pos_iou=0.3,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=256,
@@ -105,13 +126,15 @@ train_cfg = dict(
             pos_iou_thr=0.5,
             neg_iou_thr=0.5,
             min_pos_iou=0.5,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=512,
             pos_fraction=0.25,
             neg_pos_ub=-1,
             add_gt_as_proposals=True),
+        mask_size=28,
         pos_weight=-1,
         debug=False))
 test_cfg = dict(
@@ -123,35 +146,40 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=1000),
-    rbbox=dict(
-        encode='hobb',
         score_thr=0.05,
-        polygon_nms_iou_thr=0.5,
+        nms=dict(type='nms', iou_thr=0.5),
         max_per_img=1000,
-        parallel=True)
-    # soft-nms is also supported for rcnn testing
-    # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)
-)
+        mask_thr_binary=0.5))
 # dataset settings
 dataset_type = 'DOTADataset'
-dota_version = 'v1.0'
 dataset_version = 'v1'
 train_rate = '1.0'                  # 1.0_0.5 or 1.0
 val_rate = '1.0'                    # 1.0_0.5 or 1.0
+test_rate = '1.0'
 data_root = './data/dota/{}/coco/'.format(dataset_version)
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True, with_rbbox=True),
+    dict(type='LoadAnnotations', 
+        with_bbox=True, 
+        with_mask=True,
+        with_mask_weight=True,
+        with_seg=True,
+        with_heatmap_weight=True, 
+        poly2mask=False, 
+        poly2centermap=True, 
+        centermap_encode='centerness', 
+        centermap_rate=0.5, 
+        centermap_factor=4),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='Pointobb2RBBox', encoding_method='hobb'),
+    dict(type='RandomRotate', rotate_ratio=1.0, choice=(0, 90, 180, 270)),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
+    dict(type='SegRescale', scale_factor=1 / 4),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_rbboxes']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg', 'gt_heatmap_weight', 'gt_mask_weights']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -175,22 +203,29 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_trainval_{}_{}_best_keypoint.json'.format(dataset_version, train_rate),
         img_prefix=data_root + 'trainval/',
+        seg_prefix=data_root + 'pseudo_segmentation/',
+        heatmap_weight_prefix=data_root + 'heatmap_weight/',
         pipeline=train_pipeline,
-        encode='hobb'),
+        min_area=36,
+        max_small_length=8),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
-        pipeline=test_pipeline,
-        encode='hobb'),
+        pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7,
-        encode='hobb'))
-evaluation = dict(interval=1, metric='bbox')
+        evaluation_iou_threshold=0.7))
+evaluation = dict(interval=2, 
+                  metric=['hbb', 'obb'], 
+                  submit_path='./results/dota/dota_v014_centermap_net_r50_v1_trainval', 
+                  annopath='./data/dota/v0/test/labelTxt-v1.0/{:s}.txt', 
+                  imageset_file='./data/dota/v0/test/testset.txt', 
+                  excel='./results/dota/dota_v014_centermap_net_r50_v1_trainval/dota_v014_centermap_net_r50_v1_trainval.xlsx', 
+                  jsonfile_prefix='./results/dota/dota_v014_centermap_net_r50_v1_trainval')
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -214,7 +249,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/dota_v004_h_obb_r50_v1_train'
+work_dir = './work_dirs/dota_v014_centermap_net_r50_v1_trainval'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

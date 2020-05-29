@@ -338,14 +338,16 @@ class DOTADataset(CocoDataset):
                  PR_path=None,
                  logger=None,
                  excel=None,
-                 jsonfile_prefix=None):
+                 jsonfile_prefix=None,
+                 skip_format=False):
         tasks = metric
         mmcv.mkdir_or_exist(submit_path)
         filename_prefix = {'hbb': "/Task2_{:s}.txt",
                            'obb': "/Task1_{:s}.txt"}
 
         # convert results to txt file and save file (DOTA format)
-        self.results2txt(results, submit_path, logger)
+        if not skip_format:
+            self.results2txt(results, submit_path, logger)
 
         # evaluating tasks of DOTA
         two_task_aps = []

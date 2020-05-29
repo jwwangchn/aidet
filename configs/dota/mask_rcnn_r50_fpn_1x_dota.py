@@ -163,7 +163,8 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
-        pipeline=test_pipeline))
+        pipeline=test_pipeline,
+        evaluation_iou_threshold=0.5))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)

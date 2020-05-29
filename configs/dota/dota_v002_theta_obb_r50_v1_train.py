@@ -1,11 +1,11 @@
 """
 Evaluating in DOTA hbb Task
-mAP: 53.57
-class metrics: {'Task': 'hbb', 'plane': 76.92, 'baseball-diamond': 47.53, 'bridge': 26.45, 'ground-track-field': 51.92, 'small-vehicle': 48.17, 'large-vehicle': 72.24, 'ship': 78.27, 'tennis-court': 88.33, 'basketball-court': 45.62, 'storage-tank': 68.7, 'soccer-ball-field': 33.24, 'roundabout': 46.19, 'harbor': 51.06, 'swimming-pool': 27.43, 'helicopter': 41.54}
+mAP: 54.31
+class metrics: {'Task': 'hbb', 'plane': 76.89, 'baseball-diamond': 59.55, 'bridge': 27.24, 'ground-track-field': 51.71, 'small-vehicle': 66.29, 'large-vehicle': 68.35, 'ship': 74.12, 'tennis-court': 88.67, 'basketball-court': 69.35, 'storage-tank': 66.17, 'soccer-ball-field': 29.91, 'roundabout': 38.66, 'harbor': 50.07, 'swimming-pool': 27.48, 'helicopter': 20.16}
 
 Evaluating in DOTA obb Task
-mAP: 46.32
-class metrics: {'Task': 'obb', 'plane': 77.31, 'baseball-diamond': 46.05, 'bridge': 18.47, 'ground-track-field': 49.17, 'small-vehicle': 27.57, 'large-vehicle': 59.7, 'ship': 62.43, 'tennis-court': 89.8, 'basketball-court': 49.74, 'storage-tank': 67.5, 'soccer-ball-field': 36.74, 'roundabout': 46.07, 'harbor': 27.49, 'swimming-pool': 19.83, 'helicopter': 16.96}
+mAP: 40.98
+class metrics: {'Task': 'obb', 'plane': 76.39, 'baseball-diamond': 45.62, 'bridge': 17.58, 'ground-track-field': 48.27, 'small-vehicle': 49.08, 'large-vehicle': 45.2, 'ship': 53.18, 'tennis-court': 88.8, 'basketball-court': 36.44, 'storage-tank': 65.11, 'soccer-ball-field': 27.43, 'roundabout': 7.91, 'harbor': 26.55, 'swimming-pool': 19.0, 'helicopter': 8.15}
 """
 # model settings
 model = dict(

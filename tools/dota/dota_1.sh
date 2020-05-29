@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v004_h_obb_r50_v1_train'
-evaluation_set='evaluation_sample'
+model='centermap_obb_r50_fpn_1x_dota_mask_weight'
+evaluation_set='test'
 epoch=12
 dataset='dota'
 
@@ -64,6 +64,7 @@ then
     python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx PR_path=$(pwd)/results/${dataset}/${model}/PR jsonfile_prefix=$(pwd)/results/${dataset}/${model}
 elif [ $3 == 2 ]
 then
+    python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx PR_path=$(pwd)/results/${dataset}/${model}/PR jsonfile_prefix=$(pwd)/results/${dataset}/${model} skip_format=True
     echo "==== skip evaluation ===="
 elif [ $3 == 0 ]
 then
