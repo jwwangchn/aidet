@@ -43,7 +43,8 @@ class DOTADataset(CocoDataset):
                  min_area=0,
                  max_small_length=0,
                  evaluation_iou_threshold=0.5,
-                 classwise_nms_threshold=True):
+                 classwise_nms_threshold=True,
+                 encode='mask'):
         super(DOTADataset, self).__init__(ann_file,
                                           pipeline,
                                           data_root,
@@ -65,6 +66,7 @@ class DOTADataset(CocoDataset):
         self.max_small_length = max_small_length
         self.evaluation_iou_threshold = evaluation_iou_threshold
         self.classwise_nms_threshold = classwise_nms_threshold
+        self.encode = encode
 
         # join paths if data_root is specified
         if self.data_root is not None:
@@ -103,6 +105,7 @@ class DOTADataset(CocoDataset):
         gt_labels = []
         gt_bboxes_ignore = []
         gt_masks_ann = []
+        gt_rbboxes = []
 
         for i, ann in enumerate(ann_info):
             if ann.get('ignore', False):
@@ -116,6 +119,8 @@ class DOTADataset(CocoDataset):
             else:
                 gt_bboxes.append(bbox)
                 gt_labels.append(self.cat2label[ann['category_id']])
+                gt_masks_ann.append(ann['pointobb'])
+                gt_rbboxes.append(ann['pointobb'])
                 gt_masks_ann.append([ann['pointobb']])
 
         if gt_bboxes:
@@ -130,6 +135,11 @@ class DOTADataset(CocoDataset):
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
+        if gt_rbboxes:
+            gt_rbboxes = np.array(gt_rbboxes, dtype=np.float32)
+        else:
+            gt_rbboxes = np.zeros((0, 8), dtype=np.float32)
+
         seg_map = img_info['filename'].replace('jpg', 'png')
         heatmap_weight = img_info['filename'].replace('jpg', 'png')
 
@@ -139,28 +149,12 @@ class DOTADataset(CocoDataset):
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
             seg_map=seg_map,
+            rbboxes=gt_rbboxes,
             heatmap_weight=heatmap_weight)
 
         return ann
 
-    def results2txt(self, results, submit_path, logger):
-        """Write results .pkl file to dota txt format files
-
-        This function provides an all-in-one method to convert .pkl to .txt
-
-        Args:
-            dataset (obj): DotaDataset class, contains all annotations information
-            results (tuple): load from .pkl file, contain 'bbox' and 'rbbox' information
-            submit_path (str): path to save txt result files
-        
-        Returns:
-            No
-        """
-        # 1. convert pkl to dict
-        if type(results) == str:
-            # loading results from pkl file
-            results = mmcv.load(results)
-
+    def segm2txt(self, results):
         hbb_obb_results = []
         prog_bar = mmcv.ProgressBar(len(self))
 
@@ -187,6 +181,67 @@ class DOTADataset(CocoDataset):
                     hbb_obb_results.append(data)
                 
             prog_bar.update()
+
+        return hbb_obb_results
+
+    def rbbox2txt(self, results):
+        hbb_obb_results = []
+        prog_bar = mmcv.ProgressBar(len(self))
+
+        for idx in range(len(self)):
+            det, seg = results[idx]
+            img_id = self.img_ids[idx]
+            img_info = self.img_infos[idx]
+
+            # bboxes shape = [15, N], per-class
+            for label in range(len(det)):
+                bboxes, rbboxes = det[label], seg[label]
+                for idx, (bbox, rbbox) in enumerate(zip(bboxes, rbboxes)):
+                    
+                    data = dict()
+                    score = float(bbox[4])
+                    data['file_name'] = img_info['filename']
+                    data['image_id'] = img_id
+                    data['score'] = score
+                    data['category_id'] = self.cat_ids[label]
+                    data['bbox'] = bbox[:-1].tolist()
+                    
+                    if self.encode == 'thetaobb':
+                        data['rbbox'] = wwtool.thetaobb2pointobb(rbbox)
+                    elif self.encode == 'pointobb':
+                        data['rbbox'] = wwtool.pointobb2pointobb(rbbox)
+                    elif self.encode == 'hobb':
+                        data['rbbox'] = wwtool.hobb2pointobb(rbbox)
+
+                    hbb_obb_results.append(data)
+                
+            prog_bar.update()
+
+        return hbb_obb_results
+
+    def results2txt(self, results, submit_path, logger):
+        """Write results .pkl file to dota txt format files
+
+        This function provides an all-in-one method to convert .pkl to .txt
+
+        Args:
+            dataset (obj): DotaDataset class, contains all annotations information
+            results (tuple): load from .pkl file, contain 'bbox' and 'rbbox' information
+            submit_path (str): path to save txt result files
+        
+        Returns:
+            No
+        """
+        # 1. convert pkl to dict
+        if type(results) == str:
+            # loading results from pkl file
+            results = mmcv.load(results)
+
+        if self.encode == 'mask':
+            hbb_obb_results = self.segm2txt(results)
+
+        if self.encode in ['thetaobb', 'pointobb', 'hobb']:
+            hbb_obb_results = self.rbbox2txt(results)
 
         # 2. convert dict to list
         bboxes, labels, scores, filenames = {'hbb': [], 'obb': []}, [], [], []
@@ -318,7 +373,8 @@ class DOTADataset(CocoDataset):
         if type(results) == str:
             # loading results from pkl file
             results = mmcv.load(results)
-        self.format_results(results, jsonfile_prefix)
+        # save coco result
+        # self.format_results(results, jsonfile_prefix)
 
         if PR_path:
             mmcv.mkdir_or_exist(PR_path)

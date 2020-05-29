@@ -85,6 +85,7 @@ class LoadAnnotations(object):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
+                 with_rbbox=False,
                  with_mask_weight=False,
                  with_reverse_mask_weight=False,
                  with_heatmap_weight=False,
@@ -99,6 +100,7 @@ class LoadAnnotations(object):
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
+        self.with_rbbox = with_rbbox
         self.with_mask_weight = with_mask_weight
         self.with_reverse_mask_weight = with_reverse_mask_weight
         self.with_heatmap_weight = with_heatmap_weight
@@ -215,6 +217,12 @@ class LoadAnnotations(object):
         results['seg_fields'].append('gt_semantic_seg')
         return results
 
+    def _load_rbboxes(self, results):
+        ann_info = results['ann_info']
+        results['gt_rbboxes'] = ann_info['rbboxes']
+        results['rbbox_fields'].append('gt_rbboxes')
+        return results
+
     def _load_heatmap_weight(self, results):
         results['gt_heatmap_weight'] = mmcv.imread(
             osp.join(results['heatmap_weight_prefix'], results['ann_info']['heatmap_weight']),
@@ -233,7 +241,9 @@ class LoadAnnotations(object):
             results = self._load_masks(results)
         if self.with_seg:
             results = self._load_semantic_seg(results)
-        if self.with_mask_weight or self.with_reverse_mask_weight:
+        if self.with_rbbox:
+            results = self._load_rbboxes(results)
+        if self.with_mask_weight  or self.with_reverse_mask_weight:
             results = self._load_mask_weights(results)
         if self.with_heatmap_weight:
             results = self._load_heatmap_weight(results)

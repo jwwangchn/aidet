@@ -1,3 +1,3 @@
 #!/bin/sh
 
-git pull origin feature/CenterMapOBB
+git pull origin develop
