@@ -1,3 +1,12 @@
+"""
+Evaluating in DOTA hbb Task
+mAP: 75.53
+class metrics: {'Task': 'hbb', 'plane': 89.49, 'baseball-diamond': 85.29, 'bridge': 55.01, 'ground-track-field': 65.3, 'small-vehicle': 76.22, 'large-vehicle': 80.1, 'ship': 86.16, 'tennis-court': 90.22, 'basketball-court': 82.99, 'storage-tank': 85.19, 'soccer-ball-field': 56.57, 'roundabout': 66.69, 'harbor': 78.59, 'swimming-pool': 77.49, 'helicopter': 57.71}
+
+Evaluating in DOTA obb Task
+mAP: 74.2
+class metrics: {'Task': 'obb', 'plane': 89.66, 'baseball-diamond': 85.23, 'bridge': 51.12, 'ground-track-field': 65.15, 'small-vehicle': 76.49, 'large-vehicle': 78.63, 'ship': 87.0, 'tennis-court': 90.52, 'basketball-court': 82.39, 'storage-tank': 84.06, 'soccer-ball-field': 57.37, 'roundabout': 66.02, 'harbor': 73.73, 'swimming-pool': 65.87, 'helicopter': 59.75}
+"""
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
 model = dict(
@@ -130,7 +139,7 @@ test_cfg = dict(
         min_bbox_size=0),
     rcnn=dict(
         score_thr=0.05,
-        nms=dict(type='soft_nms', iou_thr=0.5),
+        nms=dict(type='nms', iou_thr=0.5),
         max_per_img=1000,
         mask_thr_binary=0.5))
 # dataset settings
@@ -155,11 +164,7 @@ train_pipeline = [
         centermap_encode='centerness', 
         centermap_rate=0.5, 
         centermap_factor=4),
-    dict(
-        type='Resize',
-        img_scale=[(1024, 1024), (896, 896), (768, 768)],
-        keep_ratio=True,
-        multiscale_mode='value'),
+    dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
