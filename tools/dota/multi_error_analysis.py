@@ -1,8 +1,8 @@
 from coco_error_analysis import analyze_results
 
 if __name__ == "__main__":
-    models = ['dota_v013_centermap_obb_r50_10conv_v1_trainval']
-    titles = [r'CenterMap OBB']
+    models = ['dota_v014_centermap_net_r50_v1_trainval']
+    titles = [r'CenterMap-Net']
     for title, model in zip(titles, models):
         city = model.split('_')[-2]
 
