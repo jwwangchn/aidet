@@ -1,4 +1,11 @@
 """
+Evaluating in DOTA hbb Task
+mAP: 71.87
+class metrics: {'Task': 'hbb', 'plane': 88.5, 'baseball-diamond': 79.5, 'bridge': 55.02, 'ground-track-field': 55.21, 'small-vehicle': 78.64, 'large-vehicle': 77.93, 'ship': 85.6, 'tennis-court': 89.25, 'basketball-court': 77.9, 'storage-tank': 82.65, 'soccer-ball-field': 46.54, 'roundabout': 62.93, 'harbor': 71.62, 'swimming-pool': 71.62, 'helicopter': 55.18}
+
+Evaluating in DOTA obb Task
+mAP: 71.14
+class metrics: {'Task': 'obb', 'plane': 88.74, 'baseball-diamond': 80.04, 'bridge': 50.16, 'ground-track-field': 55.66, 'small-vehicle': 78.56, 'large-vehicle': 77.91, 'ship': 85.95, 'tennis-court': 90.04, 'basketball-court': 78.11, 'storage-tank': 81.57, 'soccer-ball-field': 48.17, 'roundabout': 59.84, 'harbor': 64.77, 'swimming-pool': 66.71, 'helicopter': 60.92}
 
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
@@ -150,7 +157,7 @@ train_pipeline = [
     dict(type='LoadAnnotations', 
         with_bbox=True, 
         with_mask=True,
-        with_mask_weight=True,
+        with_reverse_mask_weight=True,
         with_seg=True,
         with_heatmap_weight=True, 
         poly2mask=False, 
