@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='MaskRCNN',
+    type='MaskOBB',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -191,7 +191,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/mask_rcnn_r50_fpn_1x_dota'
+work_dir = './work_dirs/dota_v016_mask_obb_r50_v1_trainval'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
