@@ -2,7 +2,7 @@ from coco_error_analysis import analyze_results
 
 
 if __name__ == "__main__":
-    models = ['dota_v002_theta_obb_r50_v1_train', 'dota_v002_theta_obb_r50_v1_train']
+    models = ['dota_v003_point_obb_r50_v1_train', 'dota_v004_h_obb_r50_v1_train']
 
     for model in models:
         city = model.split('_')[-2]
