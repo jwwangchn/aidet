@@ -9,7 +9,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 
-def makeplot(rs, ps, outDir, class_name, iou_type):
+def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
     cs = np.vstack([
         np.ones((2, 3)),
         np.array([.31, .51, .74]),
@@ -42,10 +42,10 @@ def makeplot(rs, ps, outDir, class_name, iou_type):
         plt.ylabel('precision')
         plt.xlim(0, 1.)
         plt.ylim(0, 1.)
-        plt.title(figure_tile)
+        plt.title(title)
         plt.legend()
         # plt.show()
-        fig.savefig(outDir + '/{}.png'.format(figure_tile))
+        fig.savefig(outDir + '/{}.pdf'.format(figure_tile), bbox_inches='tight', dpi=600, pad_inches=0.1)
         plt.close(fig)
 
 
@@ -101,7 +101,7 @@ def analyze_individual_category(k, cocoDt, cocoGt, catId, iou_type):
     return k, ps_
 
 
-def analyze_results(res_file, ann_file, res_types, out_dir):
+def analyze_results(res_file, ann_file, res_types, out_dir, title=None):
     for res_type in res_types:
         assert res_type in ['bbox', 'segm']
 
@@ -152,8 +152,8 @@ def analyze_results(res_file, ann_file, res_types, out_dir):
             ps[ps == -1] = 0
             ps[5, :, k, :, :] = (ps[4, :, k, :, :] > 0)
             ps[6, :, k, :, :] = 1.0
-            makeplot(recThrs, ps[:, :, k], res_out_dir, nm['name'], iou_type)
-        makeplot(recThrs, ps, res_out_dir, 'allclass', iou_type)
+            makeplot(recThrs, ps[:, :, k], res_out_dir, nm['name'], iou_type, title=title)
+        makeplot(recThrs, ps, res_out_dir, 'allclass', iou_type, title=title)
 
 
 def main():
