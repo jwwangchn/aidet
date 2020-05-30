@@ -161,10 +161,8 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        # ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
-        # img_prefix=data_root + 'test/',
-        ann_file=data_root + 'annotations/dota_evaluation_sample_v1_best_keypoint.json',
-        img_prefix=data_root + 'evaluation_sample/',
+        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
+        img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
         evaluation_iou_threshold=0.5))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
