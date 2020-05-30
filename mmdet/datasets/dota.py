@@ -71,7 +71,7 @@ class DOTADataset(CocoDataset):
         self.evaluation_iou_threshold = evaluation_iou_threshold
         self.classwise_nms_threshold = classwise_nms_threshold
         self.encode = encode
-
+        
         # join paths if data_root is specified
         if self.data_root is not None:
             if not (self.heatmap_weight_prefix is None or osp.isabs(self.heatmap_weight_prefix)):
