@@ -178,9 +178,16 @@ class DOTADataset(CocoDataset):
                     data['score'] = score
                     data['category_id'] = self.cat_ids[label]
                     data['bbox'] = bbox[:-1].tolist()
-                    segm['counts'] = segm['counts'].decode()
+                    if isinstance(segm['counts'], bytes):
+                        segm['counts'] = segm['counts'].decode()
                     data['segmentation'] = segm
                     data['thetaobb'], data['rbbox'] = segm2rbbox(segm)
+                    # save the result for coco format
+                    rles = maskUtils.frPyObjects([data['rbbox']], 1024, 1024)
+                    rle = maskUtils.merge(rles)
+                    if isinstance(rle['counts'], bytes):
+                        rle['counts'] = rle['counts'].decode()
+                    data['segmentation'] = rle
                     hbb_obb_results.append(data)
                 
             prog_bar.update()
@@ -215,7 +222,12 @@ class DOTADataset(CocoDataset):
                         data['rbbox'] = wwtool.pointobb2pointobb(rbbox)
                     elif self.encode == 'hobb':
                         data['rbbox'] = wwtool.hobb2pointobb(rbbox)
-
+                    # save the result for coco format
+                    rles = maskUtils.frPyObjects([data['rbbox']], 1024, 1024)
+                    rle = maskUtils.merge(rles)
+                    if isinstance(rle['counts'], bytes):
+                        rle['counts'] = rle['counts'].decode()
+                    data['segmentation'] = rle
                     hbb_obb_results.append(data)
                 
             prog_bar.update()
@@ -242,7 +254,6 @@ class DOTADataset(CocoDataset):
 
         if self.encode == 'mask':
             hbb_obb_results = self.segm2txt(results)
-
         if self.encode in ['thetaobb', 'pointobb', 'hobb']:
             hbb_obb_results = self.rbbox2txt(results)
 
@@ -266,6 +277,8 @@ class DOTADataset(CocoDataset):
         print_log("\nStart merge txt file", logger=logger)
         for task in ['hbb', 'obb']:
             self.merge_txt(submit_path, task)
+
+        return hbb_obb_results
 
     def format_dota_results(self, 
                             submit_path, 
@@ -345,7 +358,9 @@ class DOTADataset(CocoDataset):
 
         # convert results to txt file and save file (DOTA format)
         if not skip_format:
-            self.results2txt(results, submit_path, logger)
+            hbb_obb_results = self.results2txt(results, submit_path, logger)
+            # save coco result
+            mmcv.dump(hbb_obb_results, "{}.{}.json".format(jsonfile_prefix, 'dota'))
 
         # evaluating tasks of DOTA
         two_task_aps = []
@@ -374,12 +389,6 @@ class DOTADataset(CocoDataset):
         worksheet = writer.sheets['Sheet1']
         worksheet.set_column("B:R", 12)
         writer.save()
-
-        if type(results) == str:
-            # loading results from pkl file
-            results = mmcv.load(results)
-        # save coco result
-        self.format_results(results, jsonfile_prefix)
 
         if PR_path:
             mmcv.mkdir_or_exist(PR_path)

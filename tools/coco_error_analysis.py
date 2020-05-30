@@ -132,7 +132,7 @@ def analyze_results(res_file, ann_file, res_types, out_dir):
         ps = np.vstack([ps, np.zeros((4, *ps.shape[1:]))])
         catIds = cocoGt.getCatIds()
         recThrs = cocoEval.params.recThrs
-        with Pool(processes=48) as pool:
+        with Pool(processes=4) as pool:
             args = [(k, cocoDt, cocoGt, catId, iou_type)
                     for k, catId in enumerate(catIds)]
             analyze_results = pool.starmap(analyze_individual_category, args)
