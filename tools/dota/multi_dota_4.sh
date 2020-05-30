@@ -36,21 +36,21 @@ do
         echo "==== start 4 GPU coco test, mode name = ${model} ===="
         mkdir -p results/${dataset}/${model}
 
-        ./tools/dota/dist_dota_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+        ./tools/dota/dist_dota_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 4 --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
     elif [ $2 == 2 ]
     then
         echo "==== start 1 GPU coco test, mode name = ${model} ===="
         export CUDA_VISIBLE_DEVICES=0
         mkdir -p results/${dataset}/${model}
 
-        python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+        python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
     elif [ $2 == 3 ]
     then
         echo "==== start 1 GPU (evaluation sample) test, mode name = ${model} ===="
         export CUDA_VISIBLE_DEVICES=0
         mkdir -p results/${dataset}/${model}
 
-        python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/evaluation_sample/evaluation_sample.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+        python tools/dota/dota_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/evaluation_sample/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/evaluation_sample/evaluation_sample.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
     elif [ $2 == 0 ]
     then
         # read the results file
@@ -62,7 +62,7 @@ do
     then
         echo "==== start loading results files and evaluation, mode name = ${model} ===="
 
-        python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx PR_path=$(pwd)/results/${dataset}/${model}/PR jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+        python tools/dota/dota_eval.py configs/${dataset}/${model}.py --results results/${dataset}/${model}/coco_results.pkl --eval hbb obb --options submit_path=$(pwd)/results/dota/${model} annopath=$(pwd)/data/dota/v0/${evaluation_set}/labelTxt-v1.0/{:s}.txt imageset_file=$(pwd)/data/dota/v0/${evaluation_set}/${evaluation_set}set.txt excel=$(pwd)/results/dota/${model}/${model}_results.xlsx PR_path=$(pwd)/results/${dataset}/${model}/PR jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
     elif [ $3 == 2 ]
     then
         echo "==== skip evaluation ===="
