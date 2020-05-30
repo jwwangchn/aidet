@@ -4,6 +4,14 @@ Task	baseball-diamond	basketball-court	bridge	ground-track-field	harbor	helicopt
 hbb	85.09	84.43	59.92	69.43	79.38	64.8	80.69	77.44	89.79	69.1	86.6	79.14	56.44	86.12	80.55	90.16
 obb	84.74	84.96	54.47	70.38	73.76	66.06	79.54	76.23	89.89	69.16	87.18	78.39	57.58	85.34	71.53	90.45
 
+Evaluating in DOTA hbb Task
+mAP: 77.44
+class metrics: {'Task': 'hbb', 'plane': 89.79, 'baseball-diamond': 85.09, 'bridge': 59.92, 'ground-track-field': 69.43, 'small-vehicle': 79.14, 'large-vehicle': 80.69, 'ship': 86.6, 'tennis-court': 90.16,  'basketball-court': 84.43, 'storage-tank': 86.12, 'soccer-ball-field': 56.44, 'roundabout': 69.1, 'harbor': 79.38, 'swimming-pool': 80.55, 'helicopter': 64.8}
+
+Evaluating in DOTA obb Task
+mAP: 76.23
+class metrics: {'Task': 'obb', 'plane': 89.89, 'baseball-diamond': 84.74, 'bridge': 54.47, 'ground-track-field': 70.38, 'small-vehicle': 78.39, 'large-vehicle': 79.54, 'ship': 87.18, 'tennis-court': 90.45, 'basketball-court': 84.96, 'storage-tank': 85.34, 'soccer-ball-field': 57.58, 'roundabout': 69.16, 'harbor': 73.76, 'swimming-pool': 71.53, 'helicopter': 66.06}
+
 
 IOU=0.7
 Evaluating in DOTA hbb Task

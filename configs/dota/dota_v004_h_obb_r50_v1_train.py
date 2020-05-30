@@ -185,10 +185,10 @@ data = dict(
         encode='hobb'),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
+        ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7,
+        evaluation_iou_threshold=0.5,
         encode='hobb'))
 evaluation = dict(interval=1, metric='bbox')
 # optimizer
