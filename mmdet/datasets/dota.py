@@ -71,7 +71,7 @@ class DOTADataset(CocoDataset):
         self.evaluation_iou_threshold = evaluation_iou_threshold
         self.classwise_nms_threshold = classwise_nms_threshold
         self.encode = encode
-        
+
         # join paths if data_root is specified
         if self.data_root is not None:
             if not (self.heatmap_weight_prefix is None or osp.isabs(self.heatmap_weight_prefix)):
@@ -176,7 +176,7 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
-                    data['category_id'] = self.cat_ids[DOTADataset.TRANS_TABLE[label]]
+                    data['category_id'] = self.cat_ids[label]
                     data['bbox'] = bbox[:-1].tolist()
                     if isinstance(segm['counts'], bytes):
                         segm['counts'] = segm['counts'].decode()
