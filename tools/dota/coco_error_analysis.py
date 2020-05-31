@@ -11,15 +11,16 @@ from pycocotools.cocoeval import COCOeval
 
 def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
     cs = np.vstack([
-        np.ones((2, 3)),
+        np.ones((1, 3)),
+        np.array([1.0, 0.98, .78]),
         np.array([.31, .51, .74]),
         np.array([.75, .31, .30]),
         np.array([.36, .90, .38]),
         np.array([.50, .39, .64]),
         np.array([1, .6, 0])
     ])
-    areaNames = ['allarea', 'small', 'medium', 'large']
-    types = ['C75', 'C50', 'Loc', 'Sim', 'Oth', 'BG', 'FN']
+    areaNames = ['allarea']
+    types = ['C75', 'C50', 'Loc', 'Oth', 'BG', 'FN']
     for i in range(len(areaNames)):
         area_ps = ps[..., i, 0]
         figure_tile = iou_type + '-' + class_name + '-' + areaNames[i]
