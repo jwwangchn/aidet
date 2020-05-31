@@ -456,7 +456,11 @@ class CenterMapOBB(TwoStageDetector):
                     score_thr=0.5, 
                     out_file=None,
                     show_flag=0,
-                    thickness=2):
+                    thickness=2,
+                    wait_time=50,
+                    show=False,
+                    single_color=None,
+                    single_class=None):
         # RGB
         DOTA_COLORS = {'harbor': (60, 180, 75), 'ship': (230, 25, 75), 'small-vehicle': (255, 225, 25), 'large-vehicle': (245, 130, 200), 
         'storage-tank': (230, 190, 255), 'plane': (245, 130, 48), 'soccer-ball-field': (0, 0, 128), 'bridge': (255, 250, 200), 
@@ -498,17 +502,21 @@ class CenterMapOBB(TwoStageDetector):
                 for i, bbox in enumerate(bbox_result)
             ]
             labels = np.concatenate(labels)
-            colors = [DOTA_COLORS[class_names[label]][::-1] for label in labels]
+            if single_color:
+                colors = [single_color for label in labels]
+            else:
+                colors = [DOTA_COLORS[class_names[label]][::-1] for label in labels]
 
             # draw segmentation masks
             if segm_result is not None and (show_flag == 2 or show_flag == 0):
                 segms = mmcv.concat_list(segm_result)
                 inds = np.where(bboxes[:, -1] > score_thr)[0]
                 for ind in inds:
-                    color_mask = np.random.randint(
-                        0, 256, (1, 3), dtype=np.uint8)
+                    label = labels[ind]
+                    if single_class and class_names[label] != single_class:
+                        continue
+                    color_mask = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
                     mask = maskUtils.decode(segms[ind]).astype(np.bool)
-                    
                     segms[ind]['counts'] = segms[ind]['counts'].decode()
                     thetaobb, pointobb = wwtool.segm2rbbox(segms[ind])
 
@@ -529,5 +537,7 @@ class CenterMapOBB(TwoStageDetector):
                     right_bottom = (bbox_int[2], bbox_int[3])
                     cv2.rectangle(
                         img_show, left_top, right_bottom, colors[idx], thickness=thickness)
+        if show:
+            img_show = wwtool.show_image(img_show, win_size=800, save_name=out_file, wait_time=wait_time)
 
-        wwtool.show_image(img_show, win_size=800, save_name=out_file)
+        return img_show
