@@ -15,7 +15,7 @@ def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
         np.array([1.0, 0.98, .78]),
         np.array([.31, .51, .74]),
         np.array([.75, .31, .30]),
-        np.array([.36, .90, .38]),
+        # np.array([.36, .90, .38]),
         np.array([.50, .39, .64]),
         np.array([1, .6, 0])
     ])
