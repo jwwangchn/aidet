@@ -6,6 +6,14 @@ class metrics: {'Task': 'hbb', 'plane': 89.49, 'baseball-diamond': 85.29, 'bridg
 Evaluating in DOTA obb Task
 mAP: 74.2
 class metrics: {'Task': 'obb', 'plane': 89.66, 'baseball-diamond': 85.23, 'bridge': 51.12, 'ground-track-field': 65.15, 'small-vehicle': 76.49, 'large-vehicle': 78.63, 'ship': 87.0, 'tennis-court': 90.52, 'basketball-court': 82.39, 'storage-tank': 84.06, 'soccer-ball-field': 57.37, 'roundabout': 66.02, 'harbor': 73.73, 'swimming-pool': 65.87, 'helicopter': 59.75}
+
+with gt:
+mAP: 76.59
+class metrics: {'Task': 'hbb', 'plane': 89.21, 'baseball-diamond': 86.89, 'bridge': 59.51, 'ground-track-field': 71.82, 'small-vehicle': 79.49, 'large-vehicle': 80.32, 'ship': 85.99, 'tennis-court': 89.38, 'basketball-court': 79.76, 'storage-tank': 86.59, 'soccer-ball-field': 57.38, 'roundabout': 68.3, 'harbor': 78.39, 'swimming-pool': 73.56, 'helicopter': 62.31}
+
+Evaluating in DOTA obb Task
+mAP: 75.98
+class metrics: {'Task': 'obb', 'plane': 89.18, 'baseball-diamond': 85.91, 'bridge': 53.89, 'ground-track-field': 73.19, 'small-vehicle': 79.06, 'large-vehicle': 79.62, 'ship': 87.02, 'tennis-court': 89.68, 'basketball-court': 84.77, 'storage-tank': 84.93, 'soccer-ball-field': 59.62, 'roundabout': 68.64, 'harbor': 73.66, 'swimming-pool': 68.39, 'helicopter': 62.07}
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings

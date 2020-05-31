@@ -12,4 +12,4 @@ if __name__ == "__main__":
 
         print(f"start processing {model}")
 
-        analyze_results(result, ann, ['segm'], out_dir, title=titles)
+        analyze_results(result, ann, ['segm'], out_dir, title=title)
