@@ -47,7 +47,7 @@ def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
             plt.title(class_name)
         else:
             plt.title(title)
-        plt.legend()
+        plt.legend(edgecolor='black')
         # plt.show()
         fig.savefig(outDir + '/{}.pdf'.format(figure_tile), bbox_inches='tight', dpi=600, pad_inches=0.1)
         plt.close(fig)
