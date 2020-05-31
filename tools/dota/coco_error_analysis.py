@@ -32,7 +32,7 @@ def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
         fig = plt.figure()
         ax = plt.subplot(111)
         for k in range(len(types)):
-            ax.plot(rs, ps_curve[k + 1], color=[1, 1, 1], linewidth=0.5)
+            ax.plot(rs, ps_curve[k + 1], color=[0, 0, 0], linewidth=0.5)
             ax.fill_between(
                 rs,
                 ps_curve[k],
@@ -133,7 +133,7 @@ def analyze_results(res_file, ann_file, res_types, out_dir, title=None):
         cocoEval.evaluate()
         cocoEval.accumulate()
         ps = cocoEval.eval['precision']
-        ps = np.vstack([ps, np.zeros((4, *ps.shape[1:]))])
+        ps = np.vstack([ps, np.zeros((3, *ps.shape[1:]))])
         catIds = cocoGt.getCatIds()
         recThrs = cocoEval.params.recThrs
         with Pool(processes=48) as pool:
@@ -146,16 +146,16 @@ def analyze_results(res_file, ann_file, res_types, out_dir, title=None):
                 k + 1, nm['name']))
             analyze_result = analyze_results[k]
             assert k == analyze_result[0]
-            ps_supercategory = analyze_result[1]['ps_supercategory']
+            # ps_supercategory = analyze_result[1]['ps_supercategory']
             ps_allcategory = analyze_result[1]['ps_allcategory']
             # compute precision but ignore superclass confusion
-            ps[3, :, k, :, :] = ps_supercategory
+            # ps[3, :, k, :, :] = ps_supercategory
             # compute precision but ignore any class confusion
-            ps[4, :, k, :, :] = ps_allcategory
+            ps[3, :, k, :, :] = ps_allcategory
             # fill in background and false negative errors and plot
             ps[ps == -1] = 0
-            ps[5, :, k, :, :] = (ps[4, :, k, :, :] > 0)
-            ps[6, :, k, :, :] = 1.0
+            ps[4, :, k, :, :] = (ps[3, :, k, :, :] > 0)
+            ps[5, :, k, :, :] = 1.0
             makeplot(recThrs, ps[:, :, k], res_out_dir, nm['name'], iou_type, title=title)
         makeplot(recThrs, ps, res_out_dir, 'allclass', iou_type, title=title)
 
