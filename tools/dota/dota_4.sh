@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='centermap_net_tgrs_r101_mask_weight_V1'
+model='dota_v014_centermap_net_r50_v1_trainval'
 evaluation_set='test'
 epoch=12
 dataset='dota'
