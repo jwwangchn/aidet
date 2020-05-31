@@ -32,7 +32,7 @@ def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
         fig = plt.figure()
         ax = plt.subplot(111)
         for k in range(len(types)):
-            ax.plot(rs, ps_curve[k + 1], color=[0, 0, 0], linewidth=0.5)
+            ax.plot(rs, ps_curve[k + 1], color=[1, 1, 1], linewidth=0.5)
             ax.fill_between(
                 rs,
                 ps_curve[k],
@@ -47,7 +47,7 @@ def makeplot(rs, ps, outDir, class_name, iou_type, title=None):
             plt.title(class_name)
         else:
             plt.title(title)
-        plt.legend(edgecolor='black')
+        plt.legend()
         # plt.show()
         fig.savefig(outDir + '/{}.pdf'.format(figure_tile), bbox_inches='tight', dpi=600, pad_inches=0.1)
         plt.close(fig)
