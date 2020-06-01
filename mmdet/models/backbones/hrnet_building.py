@@ -268,6 +268,7 @@ class HighResolutionNet(nn.Module):
                 group=None, 
                 sync_stats=False, 
                 **kwargs):
+        config = json.load(open(config, 'r'))
         extra = config['EXTRA']
         super(HighResolutionNet, self).__init__()
 
