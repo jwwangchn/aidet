@@ -101,7 +101,7 @@ train_cfg = dict(
             neg_iou_thr=0.3,
             min_pos_iou=0.3,
             ignore_iof_thr=-1,
-            gpu_assign_thr=512),
+            gpu_assign_thr=128),
         sampler=dict(
             type='RandomSampler',
             num=256,
@@ -125,7 +125,7 @@ train_cfg = dict(
             neg_iou_thr=0.5,
             min_pos_iou=0.5,
             ignore_iof_thr=-1,
-            gpu_assign_thr=512),
+            gpu_assign_thr=128),
         sampler=dict(
             type='RandomSampler',
             num=512,
@@ -186,7 +186,7 @@ for city in cities:
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=2,
-    workers_per_gpu=0,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=train_ann_file,
