@@ -12,6 +12,7 @@ then
     echo "==== start no debug training, mode name = ${model} ===="
     export CUDA_LAUNCH_BLOCKING=1
     srun -p ad_rs \
+    -N2 \
     --job-name=bc_v009 \
     --gres=gpu:8 \
     -n16 \
