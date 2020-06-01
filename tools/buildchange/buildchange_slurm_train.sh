@@ -16,8 +16,9 @@ then
     --gres=gpu:8 \
     -n16 \
     --ntasks-per-node=8 \
+    --cpus-per-task=5 \
     --kill-on-bad-exit=1 \
-    python -u tools/train.py configs/${dataset}/${model}.py --launcher="slurm" --gpus 16
+    python -u tools/train.py configs/${dataset}/${model}.py --work_dir=./work_dirs/${model} --launcher="slurm" --gpus 16
 elif [ $1 == 2 ]
 then
     # train and debug
