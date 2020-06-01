@@ -22,9 +22,9 @@ import torch.nn.functional as F
 from ..registry import BACKBONES
 
 import sys
-path_torchE = "/mnt/lustre/share/miniconda3/envs/r0.1.2/lib/python3.6/site-packages/torchE"
-sys.path.insert(0, path_torchE)
-from nn import SyncBatchNorm2d
+# path_torchE = "/mnt/lustre/share/miniconda3/envs/r0.1.2/lib/python3.6/site-packages/torchE"
+# sys.path.insert(0, path_torchE)
+# from nn import SyncBatchNorm2d
 BatchNorm=None
 
 logger = logging.getLogger(__name__)
@@ -276,12 +276,13 @@ class HighResolutionNet(nn.Module):
 
         if syncbn:
             # from lib.syncbn import SynchronizedBatchNorm2d as BatchNorm
-            def BNFunc(*args, **kwargs):
-                return SyncBatchNorm2d(*args, **kwargs, eps=1e-4, momentum=0.9,
-                                       group_size=group_size, group=group,
-                                       sync_stats=sync_stats)
-            global BatchNorm
-            BatchNorm = BNFunc
+            pass
+            # def BNFunc(*args, **kwargs):
+            #     return SyncBatchNorm2d(*args, **kwargs, eps=1e-4, momentum=0.9,
+            #                            group_size=group_size, group=group,
+            #                            sync_stats=sync_stats)
+            # global BatchNorm
+            # BatchNorm = BNFunc
         else:
             from torch.nn import BatchNorm2d as BatchNorm
 
