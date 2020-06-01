@@ -14,7 +14,7 @@ then
     srun -p ad_rs \
     --job-name=bc_v009 \
     --gres=gpu:8 \
-    -n16 \
+    --ntasks=16 \
     --ntasks-per-node=8 \
     --kill-on-bad-exit=1 \
     ./tools/dist_train.sh configs/${dataset}/${model}.py 16
