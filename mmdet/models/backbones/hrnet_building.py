@@ -529,7 +529,7 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = '0'
     cfg = json.load(open('hrnet_config.json', 'r'))
 
-    sim_data = torch.autograd.Variable(torch.rand(2, 3, 353, 353)).cuda(async=True)
+    sim_data = torch.autograd.Variable(torch.rand(2, 3, 353, 353)).cuda(sync=True)
     model = HighResolutionNet(cfg, n_channel_per_image=3, n_phase=1, n_classes=2,
                               syncbn=False, group_size=1,
                               group=None, sync_stats=False).cuda()
