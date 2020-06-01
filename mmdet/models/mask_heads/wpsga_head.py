@@ -161,15 +161,17 @@ class WeightedPseudoSegmentationHead(nn.Module):
         if self.show_featuremap:
             prediction = mask_pred.squeeze(0)
             prediction = F.softmax(prediction, dim=0).argmax(0).cpu().numpy()
-            print("prediction: ", prediction[0:10, 0:10])
-            wwtool.visualization.mask.show_mask(prediction, 16)
+            wwtool.visualization.mask.show_mask(prediction, 
+                                                16,
+                                                out_file='/home/jwwangchn/Documents/Nutstore/100-Work/110-Projects/2019-DOTA/05-CVPR/supplementary/heatmap/mask.png')
+
             show_featuremap(x.cpu(), win_name='SSB Output')
         return mask_pred, x
 
     def loss(self, mask_pred, labels, weights=None):
         if self.show_featuremap:
             show_featuremap(labels.cpu(),  win_name='labels')
-            # show_featuremap(weights.cpu(),  win_name='weights')
+
         labels = labels.squeeze(1).long()
         loss_semantic_seg = self.criterion(mask_pred, labels)
         if self.use_focal_loss:
