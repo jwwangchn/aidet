@@ -10,7 +10,9 @@ if [ $1 == 1 ]
 then
     # train but not debug
     echo "==== start no debug training, mode name = ${model} ===="
-    export CUDA_LAUNCH_BLOCKING=1
+    # export CUDA_LAUNCH_BLOCKING=1
+    set -x
+    
     srun -p ad_rs \
     -N2 \
     --job-name=bc_v009 \
