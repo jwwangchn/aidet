@@ -13,9 +13,9 @@ then
     export CUDA_LAUNCH_BLOCKING=1
     srun -p ad_rs \
     --job-name=bc_v009 \
-    --gres=gpu:8 \
-    --ntasks=16 \
-    --ntasks-per-node=8 \
+    --gres=gpu:4 \
+    -n8 \
+    --ntasks-per-node=4 \
     --kill-on-bad-exit=1 \
     ./tools/dist_train.sh configs/${dataset}/${model}.py 16
 elif [ $1 == 2 ]
