@@ -24,7 +24,7 @@ model = dict(
     backbone=dict(
     type='HRNet',
     extra=dict(
-        'tools/buildchange/hrnet_config.json',
+        config='tools/buildchange/hrnet_config.json',
         n_channel_per_image=3, 
         n_phase=1, 
         n_classes=2,
