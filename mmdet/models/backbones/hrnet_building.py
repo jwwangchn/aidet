@@ -26,7 +26,7 @@ import sys
 # path_torchE = "/mnt/lustre/share/miniconda3/envs/r0.1.2/lib/python3.6/site-packages/torchE"
 # sys.path.insert(0, path_torchE)
 # from nn import SyncBatchNorm2d
-BatchNorm=None
+from torch.nn import BatchNorm2d as BatchNorm
 
 logger = logging.getLogger(__name__)
 
@@ -286,7 +286,8 @@ class HighResolutionNet(nn.Module):
             # global BatchNorm
             # BatchNorm = BNFunc
         else:
-            from torch.nn import BatchNorm2d as BatchNorm
+            pass
+            
 
         planes_per_phase = int(max((64/8)//n_phase,1) * 8)
         
@@ -487,17 +488,17 @@ class HighResolutionNet(nn.Module):
         x = self.stage4(x_list)
 
         # Upsampling
-        x0_h, x0_w = x[0].size(2), x[0].size(3)
-        out_h = x0_h * 4
-        out_w = x0_w * 4
-        x0 = F.upsample(x[0], size=(out_h, out_w), mode='bilinear', align_corners=True)
-        x1 = F.upsample(x[1], size=(out_h, out_w), mode='bilinear', align_corners=True)
-        x2 = F.upsample(x[2], size=(out_h, out_w), mode='bilinear', align_corners=True)
-        x3 = F.upsample(x[3], size=(out_h, out_w), mode='bilinear', align_corners=True)
+        # x0_h, x0_w = x[0].size(2), x[0].size(3)
+        # out_h = x0_h * 4
+        # out_w = x0_w * 4
+        # x0 = F.upsample(x[0], size=(out_h, out_w), mode='bilinear', align_corners=True)
+        # x1 = F.upsample(x[1], size=(out_h, out_w), mode='bilinear', align_corners=True)
+        # x2 = F.upsample(x[2], size=(out_h, out_w), mode='bilinear', align_corners=True)
+        # x3 = F.upsample(x[3], size=(out_h, out_w), mode='bilinear', align_corners=True)
 
-        x = torch.cat([x0, x1, x2, x3], 1)
+        # x = torch.cat([x0, x1, x2, x3], 1)
 
-        x = self.last_layer(x)
+        # x = self.last_layer(x)
 
         return x
 
