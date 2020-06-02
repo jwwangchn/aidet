@@ -11,7 +11,7 @@ then
     # train but not debug
     echo "==== start no debug training, mode name = ${model} ===="
     export CUDA_LAUNCH_BLOCKING=1
-    ./tools/dist_train.sh configs/${dataset}/${model}.py 8
+    srun -p ad_rs --gres=gpu:8 --cpus-per-task=16 ./tools/dist_train.sh configs/${dataset}/${model}.py 8
 elif [ $1 == 2 ]
 then
     # train and debug
@@ -35,7 +35,7 @@ then
     echo "==== start 4 GPU coco test, mode name = ${model} ===="
     mkdir -p results/${dataset}/${model}
 
-    ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+    srun -p ad_rs --gres=gpu:8 --cpus-per-task=16 ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}
 elif [ $2 == 2 ]
 then
     echo "==== start 1 GPU coco test, mode name = ${model} ===="
