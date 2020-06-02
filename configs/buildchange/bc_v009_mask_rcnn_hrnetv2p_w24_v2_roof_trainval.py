@@ -101,7 +101,7 @@ train_cfg = dict(
             neg_iou_thr=0.3,
             min_pos_iou=0.3,
             ignore_iof_thr=-1,
-            gpu_assign_thr=1),
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=256,
@@ -125,7 +125,7 @@ train_cfg = dict(
             neg_iou_thr=0.5,
             min_pos_iou=0.5,
             ignore_iof_thr=-1,
-            gpu_assign_thr=1),
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=512,
@@ -138,15 +138,15 @@ train_cfg = dict(
 test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
-        nms_pre=2000,
-        nms_post=2000,
-        max_num=2000,
+        nms_pre=3000,
+        nms_post=3000,
+        max_num=3000,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
         score_thr=0.05,
         nms=dict(type='nms', iou_thr=0.5),
-        max_per_img=1000,
+        max_per_img=2000,
         mask_thr_binary=0.5))
 # dataset settings
 dataset_type = 'BuildChangeDataset'
@@ -185,7 +185,7 @@ for city in cities:
     train_ann_file.append(data_root + 'annotations/buildchange_v2_train_{}.json'.format(city))
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
-    imgs_per_gpu=2,
+    imgs_per_gpu=1,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
