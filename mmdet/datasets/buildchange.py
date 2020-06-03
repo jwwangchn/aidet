@@ -91,7 +91,10 @@ class BuildChangeDataset(CocoDataset):
                 gt_bboxes.append(bbox)
                 gt_labels.append(self.cat2label[ann['category_id']])
                 gt_masks_ann.append(ann['segmentation'])
-                gt_offsets.append(ann['offset'])
+                if 'offset' in ann:
+                    gt_offsets.append(ann['offset'])
+                else:
+                    gt_offsets.append([0, 0])
 
         if gt_bboxes:
             gt_bboxes = np.array(gt_bboxes, dtype=np.float32)

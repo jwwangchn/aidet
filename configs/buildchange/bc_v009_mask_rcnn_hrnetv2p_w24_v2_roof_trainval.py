@@ -192,7 +192,7 @@ cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
 train_ann_file = []
 img_prefix = []
 for city in cities:
-    train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
+    train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}.json'.format(city))
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=2,
