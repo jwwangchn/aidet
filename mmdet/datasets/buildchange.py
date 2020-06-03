@@ -59,13 +59,13 @@ class BuildChangeDataset(CocoDataset):
         """Parse bbox and mask annotation.
 
         Args:
-            img_info (dict): Image info of an image.
             ann_info (list[dict]): Annotation info of an image.
+            with_mask (bool): Whether to parse mask annotations.
 
         Returns:
             dict: A dict containing the following keys: bboxes, bboxes_ignore,
-                labels, masks, seg_map.
-                "masks" are already decoded into binary masks.
+                labels, masks, seg_map. "masks" are raw annotations and not
+                decoded into binary masks.
         """
         gt_bboxes = []
         gt_labels = []
@@ -76,7 +76,7 @@ class BuildChangeDataset(CocoDataset):
         for i, ann in enumerate(ann_info):
             if ann.get('ignore', False):
                 continue
-
+            
             if self.bbox_type == 'roof':
                 x1, y1, w, h = ann['bbox']
             elif self.bbox_type == 'building':
@@ -103,19 +103,21 @@ class BuildChangeDataset(CocoDataset):
         else:
             gt_bboxes = np.zeros((0, 4), dtype=np.float32)
             gt_labels = np.array([], dtype=np.int64)
+            gt_offsets = np.array((0, 2), dtype=np.float32)
 
         if gt_bboxes_ignore:
             gt_bboxes_ignore = np.array(gt_bboxes_ignore, dtype=np.float32)
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
+        seg_map = img_info['filename'].replace('jpg', 'png')
+
         ann = dict(
             bboxes=gt_bboxes,
             labels=gt_labels,
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
-            seg_map=img_info['segm_file'],
+            seg_map=seg_map,
             offsets=gt_offsets)
 
         return ann
-
