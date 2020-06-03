@@ -528,6 +528,7 @@ class HighResolutionNet(nn.Module):
         #             '=> loading {} pretrained model {}'.format(k, pretrained))
         #     model_dict.update(pretrained_dict)
         #     self.load_state_dict(model_dict)
+        print(pretrained)
         if isinstance(pretrained, str):
             logger = get_root_logger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
