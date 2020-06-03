@@ -20,6 +20,7 @@ import torch.nn as nn
 import torch._utils
 import torch.nn.functional as F
 
+from collections import OrderedDict
 from mmcv.cnn import constant_init, kaiming_init
 from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -521,11 +522,16 @@ class HighResolutionNet(nn.Module):
             pretrained_dict = torch.load(pretrained)
             logger.info('=> loading pretrained model {}'.format(pretrained))
             model_dict = self.state_dict()
-            for k, v in pretrained_dict.items():
-                if k in model_dict.keys():
-                    print("matched: ", k, v)
-                else:
-                    print("no matched: ", k, v)
+
+            if isinstance(pretrained_dict, OrderedDict):
+                pretrained_dict = pretrained_dict
+            elif isinstance(pretrained_dict, dict) and 'state_dict' in pretrained_dict:
+                pretrained_dict = pretrained_dict['state_dict']
+            else:
+                raise RuntimeError(
+                'No state_dict found in checkpoint file {}'.format(pretrained))
+            
+
             pretrained_dict = {k: v for k, v in pretrained_dict.items()
                                if k in model_dict.keys()}
             for k, _ in pretrained_dict.items():
