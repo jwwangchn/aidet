@@ -6,7 +6,7 @@ validation set:
     {xian_fine} / val
 
 extra:
-    + bbox_type = building
+    + footprint -> roof: offset
 
 Evaluate annotation type *bbox* 
 DONE (t=29.12s).
@@ -95,6 +95,19 @@ model = dict(
         in_channels=256,
         conv_out_channels=256,
         num_classes=2,
+        loss_mask=dict(
+            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)),
+    offset_roi_extractor=dict(
+        type='SingleRoIExtractor',
+        roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
+        out_channels=256,
+        featmap_strides=[4, 8, 16, 32]),
+    offset_head=dict(
+        type='ConvOffsetHead',
+        num_convs=4,
+        roi_feat_size=7,
+        in_channels=256,
+        conv_out_channels=256,
         loss_mask=dict(
             type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
