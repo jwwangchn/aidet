@@ -88,6 +88,7 @@ class LoadAnnotations(object):
                  with_rbbox=False,
                  with_mask_weight=False,
                  with_heatmap_weight=False,
+                 with_offset=False,
                  poly2mask=True,
                  poly2centermap=False,
                  centermap_encode='centerness',
@@ -102,6 +103,7 @@ class LoadAnnotations(object):
         self.with_rbbox = with_rbbox
         self.with_mask_weight = with_mask_weight
         self.with_heatmap_weight = with_heatmap_weight
+        self.with_offset = with_offset
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
         self.centermap_encode = centermap_encode
@@ -221,6 +223,11 @@ class LoadAnnotations(object):
         results['seg_fields'].append('gt_heatmap_weight')
         return results
 
+    def _load_offsets(self, results):
+        ann_info = results['ann_info']
+        results['gt_offsets'] = ann_info['offsets']
+        return results
+
     def __call__(self, results):
         if self.with_bbox:
             results = self._load_bboxes(results)
@@ -238,6 +245,8 @@ class LoadAnnotations(object):
             results = self._load_mask_weights(results)
         if self.with_heatmap_weight:
             results = self._load_heatmap_weight(results)
+        if self.with_offset:
+            results = self._load_offsets(results)
         return results
 
     def __repr__(self):
