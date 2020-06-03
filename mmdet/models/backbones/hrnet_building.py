@@ -525,7 +525,7 @@ class HighResolutionNet(nn.Module):
                 if k in model_dict.keys():
                     print("matched: ", k, v)
                 else:
-                    print("no matched: ", k)
+                    print("no matched: ", k, v)
             pretrained_dict = {k: v for k, v in pretrained_dict.items()
                                if k in model_dict.keys()}
             for k, _ in pretrained_dict.items():
