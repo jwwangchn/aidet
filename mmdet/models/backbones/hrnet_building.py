@@ -537,13 +537,6 @@ class HighResolutionNet(nn.Module):
                     kaiming_init(m)
                 elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
                     constant_init(m, 1)
-
-            if self.zero_init_residual:
-                for m in self.modules():
-                    if isinstance(m, Bottleneck):
-                        constant_init(m.norm3, 0)
-                    elif isinstance(m, BasicBlock):
-                        constant_init(m.norm2, 0)
         else:
             raise TypeError('pretrained must be a str or None')
 
