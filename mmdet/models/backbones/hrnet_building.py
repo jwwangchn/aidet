@@ -510,35 +510,40 @@ class HighResolutionNet(nn.Module):
         return x
 
     def init_weights(self, pretrained='',):
-        # logger.info('=> init weights from normal distribution')
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv2d):
-        #         nn.init.normal_(m.weight, std=0.001)
-        #     # elif isinstance(m, InPlaceABNSync):
-        #     #     nn.init.constant_(m.weight, 1)
-        #     #     nn.init.constant_(m.bias, 0)
-        # if os.path.isfile(pretrained):
-        #     pretrained_dict = torch.load(pretrained)
-        #     logger.info('=> loading pretrained model {}'.format(pretrained))
-        #     model_dict = self.state_dict()
-        #     pretrained_dict = {k: v for k, v in pretrained_dict.items()
-        #                        if k in model_dict.keys()}
-        #     for k, _ in pretrained_dict.items():
-        #         logger.info(
-        #             '=> loading {} pretrained model {}'.format(k, pretrained))
-        #     model_dict.update(pretrained_dict)
-        #     self.load_state_dict(model_dict)
-        if isinstance(pretrained, str):
-            logger = get_root_logger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m, 1)
-        else:
-            raise TypeError('pretrained must be a str or None')
+        logger.info('=> init weights from normal distribution')
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.normal_(m.weight, std=0.001)
+            # elif isinstance(m, InPlaceABNSync):
+            #     nn.init.constant_(m.weight, 1)
+            #     nn.init.constant_(m.bias, 0)
+        if os.path.isfile(pretrained):
+            pretrained_dict = torch.load(pretrained)
+            logger.info('=> loading pretrained model {}'.format(pretrained))
+            model_dict = self.state_dict()
+            for k, v in pretrained_dict.items():
+                if k in model_dict.keys():
+                    print("matched: ", k, v)
+                else:
+                    print("no matched: ", k)
+            pretrained_dict = {k: v for k, v in pretrained_dict.items()
+                               if k in model_dict.keys()}
+            for k, _ in pretrained_dict.items():
+                logger.info(
+                    '=> loading {} pretrained model {}'.format(k, pretrained))
+            model_dict.update(pretrained_dict)
+            self.load_state_dict(model_dict)
+        # if isinstance(pretrained, str):
+        #     logger = get_root_logger()
+        #     load_checkpoint(self, pretrained, strict=False, logger=logger)
+        # elif pretrained is None:
+        #     for m in self.modules():
+        #         if isinstance(m, nn.Conv2d):
+        #             kaiming_init(m)
+        #         elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+        #             constant_init(m, 1)
+        # else:
+        #     raise TypeError('pretrained must be a str or None')
 
 def get_seg_model(cfg, **kwargs):
     model = HighResolutionNet(cfg, **kwargs)
