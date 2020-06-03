@@ -58,7 +58,6 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-        print("pretrained: ", pretrained)
         self.init_weights(pretrained=pretrained)
 
     @property
