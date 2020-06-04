@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #------------------------------config-----------------------------------
-model=${model}
+model='bc_v012_mask_rcnn_hrnetv2p_w18_v2_roof_trainval'
 epoch=12
 dataset='buildchange'
 
