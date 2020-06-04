@@ -165,13 +165,13 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=val_ann_file,
-        img_prefix=img_prefix,
+        ann_file=data_root + 'annotations/buildchange_v2_val_xian_fine.json',
+        img_prefix=data_root + '../' + 'xian_fine/images/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=val_ann_file,
-        img_prefix=img_prefix,
+        ann_file=data_root + 'annotations/buildchange_v2_val_xian_fine.json',
+        img_prefix=data_root + '../' + 'xian_fine/images/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
