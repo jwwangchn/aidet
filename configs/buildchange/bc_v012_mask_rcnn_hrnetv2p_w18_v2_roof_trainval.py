@@ -6,7 +6,7 @@ validation set:
     {xian_fine} / val
 
 extra:
-    + footprint -> roof: offset
+    + bbox_type = building
 
 Evaluate annotation type *bbox* 
 DONE (t=29.12s).
@@ -25,7 +25,7 @@ DONE (t=0.27s).
 # model settings
 model = dict(
     type='MaskRCNN',
-    pretrained='open-mmlab://msra/hrnetv2_w32',
+    pretrained='open-mmlab://msra/hrnetv2_w18',
     backbone=dict(
         type='HRNet',
         extra=dict(
@@ -40,20 +40,20 @@ model = dict(
                 num_branches=2,
                 block='BASIC',
                 num_blocks=(4, 4),
-                num_channels=(32, 64)),
+                num_channels=(18, 36)),
             stage3=dict(
                 num_modules=4,
                 num_branches=3,
                 block='BASIC',
                 num_blocks=(4, 4, 4),
-                num_channels=(32, 64, 128)),
+                num_channels=(18, 36, 72)),
             stage4=dict(
                 num_modules=3,
                 num_branches=4,
                 block='BASIC',
                 num_blocks=(4, 4, 4, 4),
-                num_channels=(32, 64, 128, 256)))),
-    neck=dict(type='HRFPN', in_channels=[32, 64, 128, 256], out_channels=256),
+                num_channels=(18, 36, 72, 144)))),
+    neck=dict(type='HRFPN', in_channels=[18, 36, 72, 144], out_channels=256),
     rpn_head=dict(
         type='RPNHead',
         in_channels=256,
@@ -95,19 +95,6 @@ model = dict(
         in_channels=256,
         conv_out_channels=256,
         num_classes=2,
-        loss_mask=dict(
-            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)),
-    offset_roi_extractor=dict(
-        type='SingleRoIExtractor',
-        roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
-        out_channels=256,
-        featmap_strides=[4, 8, 16, 32]),
-    offset_head=dict(
-        type='ConvOffsetHead',
-        num_convs=4,
-        roi_feat_size=7,
-        in_channels=256,
-        conv_out_channels=256,
         loss_mask=dict(
             type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
@@ -173,16 +160,13 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', 
-         with_bbox=True, 
-         with_mask=True,
-         with_offset=True),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_offsets']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -248,7 +232,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/bc_v013_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
+work_dir = './work_dirs/bc_v012_mask_rcnn_hrnetv2p_w18_v2_roof_trainval'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

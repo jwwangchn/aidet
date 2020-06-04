@@ -26,7 +26,7 @@ DONE (t=0.27s).
 # model settings
 model = dict(
     type='MaskRCNN',
-    pretrained='open-mmlab://msra/hrnetv2_w32',
+    pretrained='open-mmlab://msra/hrnetv2_w18',
     backbone=dict(
         type='HRNet',
         extra=dict(
@@ -41,20 +41,20 @@ model = dict(
                 num_branches=2,
                 block='BASIC',
                 num_blocks=(4, 4),
-                num_channels=(32, 64)),
+                num_channels=(18, 36)),
             stage3=dict(
                 num_modules=4,
                 num_branches=3,
                 block='BASIC',
                 num_blocks=(4, 4, 4),
-                num_channels=(32, 64, 128)),
+                num_channels=(18, 36, 72)),
             stage4=dict(
                 num_modules=3,
                 num_branches=4,
                 block='BASIC',
                 num_blocks=(4, 4, 4, 4),
-                num_channels=(32, 64, 128, 256)))),
-    neck=dict(type='HRFPN', in_channels=[32, 64, 128, 256], out_channels=256),
+                num_channels=(18, 36, 72, 144)))),
+    neck=dict(type='HRFPN', in_channels=[18, 36, 72, 144], out_channels=256),
     rpn_head=dict(
         type='RPNHead',
         in_channels=256,
@@ -232,7 +232,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/bc_v011_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
+work_dir = './work_dirs/bc_v011_mask_rcnn_hrnetv2p_w18_v2_roof_trainval'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
