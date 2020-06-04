@@ -52,5 +52,5 @@ if __name__ == "__main__":
         bboxes = np.vstack(bbox_result)
         if len(bboxes) == 0:
             continue
-        show_result(img, (bbox_result, segm_result), model.CLASSES, score_thr=0.5, out_file=out_file)
+        show_result(img, (bbox_result, segm_result), model.CLASSES, score_thr=0.1, out_file=out_file)
         # wwtool.imshow_bboxes(img, bbox_result[0][:, 0:-1], show=True)
