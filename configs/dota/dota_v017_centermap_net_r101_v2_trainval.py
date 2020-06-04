@@ -210,7 +210,7 @@ evaluation = dict(interval=2,
                   excel='./results/dota/dota_v017_centermap_net_r101_v2_trainval/dota_v017_centermap_net_r101_v2_trainval.xlsx', 
                   jsonfile_prefix='./results/dota/dota_v017_centermap_net_r101_v2_trainval')
 # optimizer
-optimizer = dict(type='SGD', lr=0.04, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
