@@ -42,6 +42,8 @@ if __name__ == "__main__":
     firstfile = True
     for img_name in img_list:
         image_basename = wwtool.get_basename(img_name)
+        if img_name not in ['arg_L18_104408_210384__512_1024', 'arg_L18_104408_210384__1024_512', 'google_L18_104528_210368__512_1024']:
+            continue
         
         out_file = os.path.join(save_dir, img_name)
         img_file = os.path.join(img_dir, img_name)
