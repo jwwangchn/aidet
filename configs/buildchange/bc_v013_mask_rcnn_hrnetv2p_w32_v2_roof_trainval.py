@@ -208,8 +208,8 @@ for city in cities:
     train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
-    imgs_per_gpu=1,
-    workers_per_gpu=1,
+    imgs_per_gpu=2,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=train_ann_file,

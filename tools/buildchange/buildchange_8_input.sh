@@ -35,14 +35,14 @@ then
     echo "==== start 4 GPU coco test, mode name = ${model} ===="
     mkdir -p results/${dataset}/${model}
 
-    srun -p ad_rs --gres=gpu:8 --cpus-per-task=16 ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+    srun -p ad_rs --gres=gpu:8 --cpus-per-task=16 ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
 elif [ $2 == 2 ]
 then
     echo "==== start 1 GPU coco test, mode name = ${model} ===="
     export CUDA_VISIBLE_DEVICES=0
     mkdir -p results/${dataset}/${model}
 
-    python tools/buildchange/buildchange_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+    python tools/buildchange/buildchange_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
 elif [ $2 == 0 ]
 then
     # read the results file
