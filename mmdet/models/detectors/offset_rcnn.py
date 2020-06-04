@@ -43,9 +43,6 @@ class OffsetRCNN(TwoStageDetector):
                 offset_roi_extractor)
             self.offset_head = builder.build_head(offset_head)
 
-    def init_weights(self, pretrained=None):
-        super(OffsetRCNN, self).init_weights(pretrained)
-        if self.with_offset:
             self.offset_roi_extractor.init_weights()
             self.offset_head.init_weights()
 

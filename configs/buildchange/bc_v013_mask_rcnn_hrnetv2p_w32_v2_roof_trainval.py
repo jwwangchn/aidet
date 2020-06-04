@@ -24,7 +24,7 @@ DONE (t=0.27s).
 
 # model settings
 model = dict(
-    type='MaskRCNN',
+    type='OffsetRCNN',
     pretrained='open-mmlab://msra/hrnetv2_w32',
     backbone=dict(
         type='HRNet',
@@ -103,13 +103,15 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     offset_head=dict(
-        type='ConvOffsetHead',
+        type='ConvFCOffsetHead',
         num_convs=4,
         roi_feat_size=7,
         in_channels=256,
         conv_out_channels=256,
-        loss_mask=dict(
-            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
+        target_means=[0., 0.],
+        target_stds=[0.1, 0.1],
+        loss_offset=dict(
+            type='MSELoss', loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -206,12 +208,12 @@ for city in cities:
     train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
-    imgs_per_gpu=2,
+    imgs_per_gpu=1,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
-        ann_file=train_ann_file,
-        img_prefix=img_prefix,
+        ann_file=data_root + 'annotations/buildchange_v2_trainval_shanghai_roof_footprint.json',
+        img_prefix=data_root + '../' + 'shanghai/images/',
         pipeline=train_pipeline,
         bbox_type='building'),
     val=dict(
