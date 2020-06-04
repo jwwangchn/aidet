@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.utils import _pair
 
+from mmcv.cnn import kaiming_init, normal_init
 from mmdet.core import auto_fp16, force_fp32, mask_target
 from mmdet.ops import ConvModule, build_upsample_layer
 from mmdet.ops.carafe import CARAFEPack
@@ -17,26 +18,22 @@ class ConvFCOffsetHead(nn.Module):
 
     def __init__(self,
                  num_convs=4,
+                 num_fcs=2,
                  roi_feat_size=7,
                  in_channels=256,
                  conv_kernel_size=3,
                  conv_out_channels=256,
+                 fc_out_channels=1024,
                  conv_cfg=None,
                  norm_cfg=None,
-                 loss_mask=dict(
-                     type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
+                 loss_offset=dict(
+                     type='MSELoss', loss_weight=1.0)):
         super(ConvFCOffsetHead, self).__init__()
-        self.num_convs = num_convs
-        # WARN: roi_feat_size is reserved and not used
-        self.roi_feat_size = _pair(roi_feat_size)
-        self.roi_feat_area = self.roi_feat_size[0] * self.roi_feat_size[1]
+        
         self.in_channels = in_channels
-        self.conv_kernel_size = conv_kernel_size
         self.conv_out_channels = conv_out_channels
-        self.conv_cfg = conv_cfg
-        self.norm_cfg = norm_cfg
-        self.fp16_enabled = False
-        self.loss_mask = build_loss(loss_mask)
+        self.fc_out_channels = fc_out_channels
+        self.loss_mask = build_loss(loss_offset)
 
         self.convs = nn.ModuleList()
         for i in range(self.num_convs):
@@ -52,25 +49,40 @@ class ConvFCOffsetHead(nn.Module):
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg))
     
-        if self.with_avg_pool:
-            self.avg_pool = nn.AvgPool2d(self.roi_feat_size)
-        else:
-            in_channels *= self.roi_feat_area
-        self.fc_reg_offsets = nn.Linear(in_channels, 2)
-        self.debug_imgs = None
+        roi_feat_size = _pair(roi_feat_size)
+        roi_feat_area = roi_feat_size[0] * roi_feat_size[1]
+        self.fcs = nn.ModuleList()
+        for i in range(num_fcs):
+            in_channels = (
+                self.conv_out_channels *
+                roi_feat_area if i == 0 else self.fc_out_channels)
+            self.fcs.append(nn.Linear(in_channels, self.fc_out_channels))
+
+        self.fc_offset = nn.Linear(self.fc_out_channels, 2)
+        self.relu = nn.ReLU()
+        self.loss_offset = build_loss(loss_offset)
 
     def init_weights(self):
-        nn.init.normal_(self.fc_reg_offsets.weight, 0, 0.01)
-        nn.init.constant_(self.fc_reg_offsets.bias, 0)
+        for conv in self.convs:
+            kaiming_init(conv)
+        for fc in self.fcs:
+            kaiming_init(
+                fc,
+                a=1,
+                mode='fan_in',
+                nonlinearity='leaky_relu',
+                distribution='uniform')
+        normal_init(self.fc_offset, std=0.01)
 
     @auto_fp16()
     def forward(self, x):
         for conv in self.convs:
-            x = conv(x)
-        x = x.flatten(1)
-        offset_pred = self.fc_reg_offsets(x)
-
-        return offset_pred
+            x = self.relu(conv(x))
+        x = x.view(x.size(0), -1)
+        for fc in self.fcs:
+            x = self.relu(fc(x))
+        offset = self.fc_offset(x)
+        return offset
 
     def get_target(self, sampling_results, gt_offsets, rcnn_train_cfg):
         pos_proposals = [res.pos_bboxes for res in sampling_results]
@@ -81,14 +93,11 @@ class ConvFCOffsetHead(nn.Module):
                                    gt_masks, rcnn_train_cfg)
         return mask_targets
 
-    def loss(self, mask_pred, mask_targets, labels):
+    def loss(self, offset_pred, offset_targets, labels):
         loss = dict()
-        if self.class_agnostic:
-            loss_mask = self.loss_mask(mask_pred, mask_targets,
-                                       torch.zeros_like(labels))
-        else:
-            loss_mask = self.loss_mask(mask_pred, mask_targets, labels)
-        loss['loss_mask'] = loss_mask
+        loss_offset = self.loss_iou(offset_pred,
+                                      offset_targets)
+        loss['loss_offset'] = loss_offset
         return loss
 
     def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg,
