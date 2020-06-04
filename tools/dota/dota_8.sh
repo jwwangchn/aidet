@@ -1,7 +1,7 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v011_centermap_obb_r50_v1_train_1024_512'
-evaluation_set='val'
+model='dota_v017_centermap_net_r101_v2_trainval'
+evaluation_set='test'
 epoch=12
 dataset='dota'
 
