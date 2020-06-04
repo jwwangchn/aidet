@@ -1108,7 +1108,8 @@ class Pointobb2RBBox(object):
         repr_str = self.__class__.__name__
         repr_str += ('(encoding_method={})').format(self.encoding_method)
         return repr_str
-        
+
+@PIPELINES.register_module
 class RandomRotate(object):
     """Rotate the image & bbox & mask.
 
