@@ -35,7 +35,7 @@ then
     echo "==== start 4 GPU coco test, mode name = ${model} ===="
     mkdir -p results/${dataset}/${model}
 
-    srun -p ad_rs --gres=gpu:8 --cpus-per-task=16 ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
+    srun -p Test --gres=gpu:8 --cpus-per-task=16 ./tools/buildchange/dist_buildchange_test.sh configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth 8 --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}/${model}
 elif [ $2 == 2 ]
 then
     echo "==== start 1 GPU coco test, mode name = ${model} ===="
