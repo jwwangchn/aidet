@@ -512,13 +512,14 @@ class HighResolutionNet(nn.Module):
 
     def init_weights(self, pretrained='',):
         logger.info('=> init weights from normal distribution')
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.normal_(m.weight, std=0.001)
-            # elif isinstance(m, InPlaceABNSync):
-            #     nn.init.constant_(m.weight, 1)
-            #     nn.init.constant_(m.bias, 0)
+        
         if os.path.isfile(pretrained):
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    nn.init.normal_(m.weight, std=0.001)
+                # elif isinstance(m, InPlaceABNSync):
+                #     nn.init.constant_(m.weight, 1)
+                #     nn.init.constant_(m.bias, 0)
             pretrained_dict = torch.load(pretrained, map_location='cpu')
             logger.info('=> loading pretrained model {}'.format(pretrained))
             model_dict = self.state_dict()
@@ -538,6 +539,13 @@ class HighResolutionNet(nn.Module):
                     '=> loading {} pretrained model {}'.format(k, pretrained))
             model_dict.update(pretrained_dict)
             self.load_state_dict(model_dict)
+        elif pretrained is None:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    kaiming_init(m)
+                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                    constant_init(m, 1)
+
         # if isinstance(pretrained, str):
         #     logger = get_root_logger()
         #     load_checkpoint(self, pretrained, strict=False, logger=logger)
