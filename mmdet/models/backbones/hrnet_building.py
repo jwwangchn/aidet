@@ -513,7 +513,7 @@ class HighResolutionNet(nn.Module):
     def init_weights(self, pretrained='',):
         logger.info('=> init weights from normal distribution')
         
-        if os.path.isfile(pretrained):
+        if isinstance(pretrained, str):
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     nn.init.normal_(m.weight, std=0.001)
