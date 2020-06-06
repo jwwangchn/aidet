@@ -166,7 +166,8 @@ def hobb2pointobb(hobb):
 def maskobb2thetaobb(maskobb):
     mask = maskUtils.decode(maskobb).astype(np.bool)
     gray = np.array(mask*255, dtype=np.uint8)
-    images, contours, hierarchy = cv2.findContours(gray.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours = cv2.findContours(gray.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
     
     if contours != []:
         imax_cnt_area = -1
