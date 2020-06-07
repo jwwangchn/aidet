@@ -176,7 +176,7 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
-                    data['category_id'] = self.cat_ids[label]
+                    data['category_id'] = self.cat_ids[DOTADataset.TRANS_TABLE[label]]
                     data['bbox'] = bbox[:-1].tolist()
                     if isinstance(segm['counts'], bytes):
                         segm['counts'] = segm['counts'].decode()
