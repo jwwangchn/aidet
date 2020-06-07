@@ -22,6 +22,10 @@ Evaluating in DOTA obb Task
 mAP: 54.13
 class metrics: {'Task': 'obb', 'plane': 79.46, 'baseball-diamond': 61.22, 'bridge': 20.28, 'ground-track-field': 62.23, 'small-vehicle': 47.59, 'large-vehicle': 54.89, 'ship': 63.03, 'tennis-court': 89.56, 'basketball-court': 78.38, 'storage-tank': 74.09, 'soccer-ball-field': 50.44, 'roundabout': 43.73, 'harbor': 41.36, 'swimming-pool': 18.36, 'helicopter': 27.39}
 
+official:
+mAP: 0.7612941118523574
+ap of each class: plane:0.8983448785172954, baseball-diamond:0.8435986272925508, bridge:0.5473957651887944, ground-track-field:0.7030901542828081, small-vehicle:0.7771216296268206, large-vehicle:0.7851383004608076, ship:0.8722357225953453, tennis-court:0.9064080739220957, basketball-court:0.8502347537198977, storage-tank:0.8540361396813172, soccer-ball-field:0.5732232539009823, roundabout:0.6920088837539076, harbor:0.7407532505639888, swimming-pool:0.715299174741412, helicopter:0.6605230695373374
+
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings
@@ -155,7 +159,7 @@ test_cfg = dict(
         min_bbox_size=0),
     rcnn=dict(
         score_thr=0.05,
-        nms=dict(type='soft_nms', iou_thr=0.5),
+        nms=dict(type='nms', iou_thr=0.5),
         max_per_img=1000,
         mask_thr_binary=0.5))
 # dataset settings
@@ -226,7 +230,7 @@ data = dict(
         ann_file=data_root + 'annotations/dota_test_{}_{}_best_keypoint_no_ground_truth.json'.format(dataset_version, val_rate),
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7))
+        evaluation_iou_threshold=0.5))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
                   submit_path='./results/dota/centermap_net_tgrs_mask_weight_V4', 
