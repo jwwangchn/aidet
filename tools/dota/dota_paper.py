@@ -30,8 +30,9 @@ if __name__ == "__main__":
     checkpoint_file = './work_dirs/{}/epoch_{}.pth'.format(args.config_version, args.epoch)
     img_dir = './data/{}/v1/{}/images'.format(args.dataset, args.imageset)
     
-    vis_image_list = ['P0506__1.0__824___0', 'P0877__1.0__0___0', 'P1264__1.0__2472___0', 'P2658__1.0__897___824', 'P0031__1.0__3296___2472', 'P0679__1.0__0___1095', 'P0165__1.0__0___1648', 'P0073__1.0__0___0', 'P0051__1.0__824___824', 'P1423__1.0__824___1648', 'P0880__1.0__824___0']
-    single_classes = ['harbor', 'ship', 'small-vehicle', 'large-vehicle', 'storage-tank', 'plane', 'soccer-ball-field', 'bridge', 'baseball-diamond', 'tennis-court', 'helicopter', 'roundabout', 'swimming-pool', 'ground-track-field', 'basketball-court']
+    # vis_image_list = ['P0506__1.0__824___0', 'P0877__1.0__0___0', 'P1264__1.0__2472___0', 'P2658__1.0__897___824', 'P0031__1.0__3296___2472', 'P0679__1.0__0___1095', 'P0165__1.0__0___1648', 'P0073__1.0__0___0', 'P0051__1.0__824___824', 'P1423__1.0__824___1648', 'P0880__1.0__824___0']
+    # single_classes = ['harbor', 'ship', 'small-vehicle', 'large-vehicle', 'storage-tank', 'plane', 'soccer-ball-field', 'bridge', 'baseball-diamond', 'tennis-court', 'helicopter', 'roundabout', 'swimming-pool', 'ground-track-field', 'basketball-court']
+    single_classes = ['tennis-court', 'roundabout', 'swimming-pool']
     # single_class = 'roundabout'
 
     anno_file = './data/{}/v1/coco/annotations/dota_test_v1_1.0_best_keypoint.json'.format(args.dataset)
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     for single_class in single_classes:
         output_dir = f'./results/{args.dataset}/{args.config_version}/vis/{single_class}'
         wwtool.mkdir_or_exist(output_dir)
+        print(output_dir)
         
         catIds = coco.getCatIds(catNms=[single_class])
         imgIds = coco.getImgIds(catIds=catIds)
@@ -49,8 +51,8 @@ if __name__ == "__main__":
         for idx, imgId in enumerate(imgIds):
             img_info = coco.loadImgs(imgIds[idx])[0]
             print(idx, img_info['file_name'])
-            if wwtool.get_basename(img_info['file_name']) not in vis_image_list:
-                continue
+            # if wwtool.get_basename(img_info['file_name']) not in vis_image_list:
+            #     continue
             img = cv2.imread(os.path.join(img_dir, img_info['file_name']))
             img_origin = img.copy()
 
@@ -71,6 +73,7 @@ if __name__ == "__main__":
             # merged_img = np.hstack((merged_img, detected_image))
             output_file_gt = os.path.join(output_dir, wwtool.get_basename(img_info['file_name']) + '_gt.png')
             output_file_pred = os.path.join(output_dir, wwtool.get_basename(img_info['file_name']) + '_pred.png')
+            print(output_file_gt)
             cv2.imwrite(output_file_gt, img_origin)
             cv2.imwrite(output_file_pred, detected_image)
 

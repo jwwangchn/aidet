@@ -26,6 +26,16 @@ official:
 mAP: 0.7612941118523574
 ap of each class: plane:0.8983448785172954, baseball-diamond:0.8435986272925508, bridge:0.5473957651887944, ground-track-field:0.7030901542828081, small-vehicle:0.7771216296268206, large-vehicle:0.7851383004608076, ship:0.8722357225953453, tennis-court:0.9064080739220957, basketball-court:0.8502347537198977, storage-tank:0.8540361396813172, soccer-ball-field:0.5732232539009823, roundabout:0.6920088837539076, harbor:0.7407532505639888, swimming-pool:0.715299174741412, helicopter:0.6605230695373374
 
+
+no soft-nms
+
+mAP: 0.7603393385541147
+ap of each class: plane:0.8983235169332907, baseball-diamond:0.8441050257762618, bridge:0.545956295058921, ground-track-field:0.7024872434867073, small-vehicle:0.7766137074062566, large-vehicle:0.783176339035878, ship:0.8718588452659245, tennis-court:0.9065517022043408, basketball-court:0.8488915831920468, storage-tank:0.8526865520313235, soccer-ball-field:0.564610058143582, roundabout:0.6922926707328085, harbor:0.7412754925764213, swimming-pool:0.7156452946474171, helicopter:0.6606157518205397
+
+mAP: 77.33
+class metrics: {'Task': 'hbb', 'plane': 89.7, 'baseball-diamond': 84.92, 'bridge': 59.72, 'ground-track-field': 67.96, 'small-vehicle': 79.16, 'large-vehicle': 80.66, 'ship': 86.61, 'tennis-court': 90.47, 'basketball-court': 84.47, 'storage-tank': 86.19, 'soccer-ball-field': 56.42, 'roundabout': 69.0, 'harbor': 79.33, 'swimming-pool': 80.53, 'helicopter': 64.81}
+
+
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 # model settings

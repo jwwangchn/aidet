@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------config-----------------------------------
-model='dota_v017_centermap_net_r101_v2_trainval'
+model='dota_v018_centermap_net_r101_v2_trainval_ms'
 evaluation_set='test'
 epoch=12
 dataset='dota'
