@@ -138,7 +138,7 @@ test_cfg = dict(
         mask_thr_binary=0.5))
 # dataset settings
 dataset_type = 'DOTADataset'
-dataset_version = 'v2'
+dataset_version = 'v1'
 data_root = './data/dota/{}/coco/'.format(dataset_version)
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -198,10 +198,10 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_v2_best_keypoint.json',
+        ann_file=data_root + 'annotations/dota_test_v1_1.0_no_ground_truth.json',
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
-        evaluation_iou_threshold=0.7))
+        evaluation_iou_threshold=0.5))
 evaluation = dict(interval=2, 
                   metric=['hbb', 'obb'], 
                   submit_path='./results/dota/dota_v017_centermap_net_r101_v2_trainval', 
