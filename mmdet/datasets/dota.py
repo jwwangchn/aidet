@@ -176,7 +176,7 @@ class DOTADataset(CocoDataset):
                     data['file_name'] = img_info['filename']
                     data['image_id'] = img_id
                     data['score'] = score
-                    data['category_id'] = self.cat_ids[DOTADataset.TRANS_TABLE[label]]
+                    data['category_id'] = self.cat_ids[label]
                     data['bbox'] = bbox[:-1].tolist()
                     if isinstance(segm['counts'], bytes):
                         segm['counts'] = segm['counts'].decode()
@@ -273,11 +273,6 @@ class DOTADataset(CocoDataset):
         for task in ['hbb', 'obb']:
             self.format_dota_results(submit_path, filenames, bboxes, scores, labels, task)
 
-        # 4. generate original image results
-        print_log("\nStart merge txt file", logger=logger)
-        for task in ['hbb', 'obb']:
-            self.merge_txt(submit_path, task)
-
         return hbb_obb_results
 
     def format_dota_results(self, 
@@ -361,6 +356,11 @@ class DOTADataset(CocoDataset):
             hbb_obb_results = self.results2txt(results, submit_path, logger)
             # save coco result
             mmcv.dump(hbb_obb_results, "{}.{}.json".format(jsonfile_prefix, 'dota'))
+
+        # generate original image results
+        print_log("\nStart merge txt file", logger=logger)
+        for task in ['hbb', 'obb']:
+            self.merge_txt(submit_path, task)
 
         # evaluating tasks of DOTA
         two_task_aps = []
