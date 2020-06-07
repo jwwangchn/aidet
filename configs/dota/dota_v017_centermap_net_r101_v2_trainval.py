@@ -138,7 +138,7 @@ test_cfg = dict(
         mask_thr_binary=0.5))
 # dataset settings
 dataset_type = 'DOTADataset'
-dataset_version = 'v1'
+dataset_version = 'v4'
 data_root = './data/dota/{}/coco/'.format(dataset_version)
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -198,7 +198,7 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/dota_test_v1_1.0_best_keypoint_no_ground_truth.json',
+        ann_file=data_root + 'annotations/dota_test_v4_1.0_0.5_best_keypoint_no_ground_truth.json',
         img_prefix=data_root + 'test/',
         pipeline=test_pipeline,
         evaluation_iou_threshold=0.5))
