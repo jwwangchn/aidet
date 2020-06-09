@@ -1,4 +1,11 @@
 """
+Evaluating in DOTA hbb Task                                                                                                                                                                                 
+mAP: 75.73                                                                                                                                                                                                  
+class metrics: {'Task': 'hbb', 'plane': 89.8, 'baseball-diamond': 86.39, 'bridge': 60.6, 'ground-track-field': 63.85, 'small-vehicle': 80.78, 'large-vehicle': 79.07, 'ship': 84.35, 'tennis-court': 89.37, 'basketball-court': 77.59, 'storage-tank': 86.71, 'soccer-ball-field': 48.72, 'roundabout': 71.98, 'harbor': 71.79, 'swimming-pool': 83.55, 'helicopter': 61.44}
+
+Evaluating in DOTA obb Task
+^[mAP: 75.15
+class metrics: {'Task': 'obb', 'plane': 89.99, 'baseball-diamond': 85.65, 'bridge': 56.44, 'ground-track-field': 62.85, 'small-vehicle': 80.19, 'large-vehicle': 80.47, 'ship': 87.59, 'tennis-court': 90.24, 'basketball-court': 79.46, 'storage-tank': 84.93, 'soccer-ball-field': 52.74, 'roundabout': 69.95, 'harbor': 72.51, 'swimming-pool': 76.44, 'helicopter': 57.83}
 
 """
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
