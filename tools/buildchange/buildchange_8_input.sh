@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #------------------------------config-----------------------------------
 model=${model}
+partition=${partition}
 epoch=12
 dataset='buildchange'
 
@@ -11,7 +12,7 @@ then
     # train but not debug
     echo "==== start no debug training, mode name = ${model} ===="
     # export CUDA_LAUNCH_BLOCKING=1
-    srun -p ad_rs --job-name=${model} --gres=gpu:8 --cpus-per-task=16 ./tools/dist_train.sh configs/${dataset}/${model}.py 8
+    srun -p $partition --job-name=${model} --gres=gpu:8 --cpus-per-task=16 ./tools/dist_train.sh configs/${dataset}/${model}.py 8
 elif [ $1 == 2 ]
 then
     # train and debug
