@@ -19,10 +19,11 @@ from .two_stage import TwoStageDetector
 from .mask_obb import MaskOBB
 from .rbbox_cnn import RBBoxRCNN
 from .offset_rcnn import OffsetRCNN
+from .footprint_rcnn import FootprintRCNN
 
 __all__ = [
     'CenterMapOBB', 'ATSS', 'BaseDetector', 'SingleStageDetector', 'TwoStageDetector', 'RPN',
     'FastRCNN', 'FasterRCNN', 'MaskRCNN', 'CascadeRCNN', 'HybridTaskCascade',
     'DoubleHeadRCNN', 'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN',
-    'RepPointsDetector', 'FOVEA', 'MaskOBB', 'RBBoxRCNN', 'OffsetRCNN'
+    'RepPointsDetector', 'FOVEA', 'MaskOBB', 'RBBoxRCNN', 'OffsetRCNN', 'FootprintRCNN'
 ]

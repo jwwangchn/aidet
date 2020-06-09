@@ -89,6 +89,7 @@ class LoadAnnotations(object):
                  with_mask_weight=False,
                  with_heatmap_weight=False,
                  with_offset=False,
+                 with_footprint=False,
                  poly2mask=True,
                  poly2centermap=False,
                  centermap_encode='centerness',
@@ -104,6 +105,7 @@ class LoadAnnotations(object):
         self.with_mask_weight = with_mask_weight
         self.with_heatmap_weight = with_heatmap_weight
         self.with_offset = with_offset
+        self.with_footprint = with_footprint
         self.poly2mask = poly2mask
         self.poly2centermap = poly2centermap
         self.centermap_encode = centermap_encode
@@ -187,6 +189,16 @@ class LoadAnnotations(object):
         results['mask_fields'].append('gt_masks')
         return results
 
+    def _load_footprints(self, results):
+        h, w = results['img_info']['height'], results['img_info']['width']
+        gt_footprint_masks = results['ann_info']['footprint_masks']
+        if self.poly2mask:
+            gt_footprint_masks = [self._poly2mask([mask], h, w) for mask in gt_footprint_masks]
+        results['gt_footprint_masks'] = gt_footprint_masks
+
+        results['mask_fields'].append('gt_footprint_masks')
+        return results
+
     def _load_mask_weights(self, results):
         h, w = results['img_info']['height'], results['img_info']['width']
         gt_mask_weights = results['ann_info']['masks']
@@ -247,6 +259,8 @@ class LoadAnnotations(object):
             results = self._load_heatmap_weight(results)
         if self.with_offset:
             results = self._load_offsets(results)
+        if self.with_footprint:
+            results = self._load_footprints(results)
         return results
 
     def __repr__(self):

@@ -36,6 +36,9 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
     def with_offset(self):
         return hasattr(self, 'offset_head') and self.offset_head is not None
 
+    def with_footprint(self):
+        return hasattr(self, 'footprint_head') and self.footprint_head is not None
+
     @abstractmethod
     def extract_feat(self, imgs):
         pass

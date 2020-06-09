@@ -71,6 +71,7 @@ class BuildChangeDataset(CocoDataset):
         gt_labels = []
         gt_bboxes_ignore = []
         gt_masks_ann = []
+        gt_footprint_masks = []
         gt_offsets = []
 
         for i, ann in enumerate(ann_info):
@@ -95,6 +96,11 @@ class BuildChangeDataset(CocoDataset):
                     gt_offsets.append(ann['offset'])
                 else:
                     gt_offsets.append([0, 0])
+                
+                if 'footprint_mask' in ann:
+                    gt_footprint_masks.append(ann['footprint_mask'])
+                else:
+                    gt_footprint_masks.append([0, 0])
 
         if gt_bboxes:
             gt_bboxes = np.array(gt_bboxes, dtype=np.float32)
@@ -117,6 +123,7 @@ class BuildChangeDataset(CocoDataset):
             labels=gt_labels,
             bboxes_ignore=gt_bboxes_ignore,
             masks=gt_masks_ann,
+            footprint_masks=gt_footprint_masks,
             seg_map=seg_map,
             offsets=gt_offsets)
 

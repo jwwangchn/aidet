@@ -28,7 +28,7 @@ def offset2delta(proposals, gt, means=[0, 0], stds=[1, 1]):
 def delta2offset(rois,
                deltas,
                means=[0, 0],
-               stds=[1, 1],
+               stds=[1.0, 1.0],
                max_shape=None,
                wh_ratio_clip=16 / 1000):
     """
@@ -69,17 +69,19 @@ def delta2offset(rois,
                 [0.0000, 0.6321, 7.3891, 0.3679],
                 [5.8967, 2.9251, 5.5033, 3.2749]])
     """
-    means = deltas.new_tensor(means).repeat(1, deltas.size(1) // 4)
-    stds = deltas.new_tensor(stds).repeat(1, deltas.size(1) // 4)
+    means = deltas.new_tensor(means).repeat(1, deltas.size(1) // 2)
+    stds = deltas.new_tensor(stds).repeat(1, deltas.size(1) // 2)
     denorm_deltas = deltas * stds + means
     dx = denorm_deltas[:, 0::2]
     dy = denorm_deltas[:, 1::2]
     # Compute width/height of each roi
     pw = (rois[:, 2] - rois[:, 0] + 1.0).unsqueeze(1).expand_as(dx)
     ph = (rois[:, 3] - rois[:, 1] + 1.0).unsqueeze(1).expand_as(dy)
+    x_zeros = pw.new_zeros((pw.size()[0], 1))
+    y_zeros = ph.new_zeros((ph.size()[0], 1))
     # Use network energy to shift the center of each roi
-    gx = torch.addcmul(0, 1, pw, dx)  # gx = px + pw * dx
-    gy = torch.addcmul(0, 1, ph, dy)  # gy = py + ph * dy
+    gx = torch.addcmul(x_zeros, 1, pw, dx)  # gx = px + pw * dx
+    gy = torch.addcmul(y_zeros, 1, ph, dy)  # gy = py + ph * dy
     if max_shape is not None:
         gx = gx.clamp(min=0, max=max_shape[1] - 1)
         gy = gy.clamp(min=0, max=max_shape[0] - 1)
