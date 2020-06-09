@@ -195,19 +195,18 @@ test_pipeline = [
         ])
 ]
 cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-# train_ann_file = []
-# img_prefix = []
-# for city in cities:
-#     train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
-#     img_prefix.append(data_root + '../' + "{}/images/".format(city))
-
+train_ann_file = []
+img_prefix = []
+for city in cities:
+    train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
+    img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=1,
     workers_per_gpu=0,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/buildchange_v2_trainval_sampling_roof_footprint.json',
-        img_prefix=data_root + '../' + 'sampling/images/',
+        ann_file=train_ann_file,
+        img_prefix=img_prefix,
         pipeline=train_pipeline,
         bbox_type='building'),
     val=dict(
@@ -244,7 +243,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/bc_v013_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
+work_dir = './work_dirs/bc_v014_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

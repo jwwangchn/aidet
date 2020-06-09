@@ -221,7 +221,7 @@ class FootprintRCNN(TwoStageDetector):
                 [res.pos_gt_labels for res in sampling_results])
             loss_fooprint = self.footprint_head.loss(footprint_pred, footprint_targets,
                                             pos_labels)
-            print("loss_fooprint: ", footprint_pred.shape, loss_fooprint)
+
             losses.update(loss_fooprint)
 
         return losses
