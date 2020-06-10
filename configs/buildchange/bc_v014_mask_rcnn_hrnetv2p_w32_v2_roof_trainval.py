@@ -228,8 +228,8 @@ optimizer_config = dict(grad_clip=dict(max_norm=10, norm_type=2))
 lr_config = dict(
     policy='step',
     warmup='exp',
-    warmup_iters=10000,
-    warmup_ratio=1.0 / 20,
+    warmup_iters=5000,
+    warmup_ratio=1.0 / 10,
     step=[8, 11])
 checkpoint_config = dict(interval=1)
 # yapf:disable
