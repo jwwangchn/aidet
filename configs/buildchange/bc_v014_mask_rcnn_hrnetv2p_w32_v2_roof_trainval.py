@@ -96,7 +96,6 @@ model = dict(
         conv_out_channels=256,
         target_means=[0., 0.],
         target_stds=[0.1, 0.1],
-        norm_cfg=norm_cfg,
         loss_offset=dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
