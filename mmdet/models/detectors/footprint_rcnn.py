@@ -204,14 +204,14 @@ class FootprintRCNN(TwoStageDetector):
         if self.with_footprint:
             theta = torch.empty((offset_pred.size()[0], 2, 3), requires_grad=True, device=mask_pred.device)
             with torch.no_grad():
-                theta[:, 0, 0] = torch.tensor(1.0, requires_grad=True)
-                theta[:, 1, 1] = torch.tensor(1.0, requires_grad=True)
+                theta[:, 0, 0] = torch.tensor(1.0, requires_grad=True, device=mask_pred.device)
+                theta[:, 1, 1] = torch.tensor(1.0, requires_grad=True, device=mask_pred.device)
                 offsets = delta2offset(pos_rois[:, 1:], 
                                         offset_pred, 
                                         [0, 0], 
                                         [1.0, 1.0], 
                                         (1024, 1024))
-                theta[:, :, -1] = offsets
+                theta[:, :, -1] = offsets.to
             grid = F.affine_grid(theta, mask_pred.size())
             footprint_pred = F.grid_sample(mask_pred, grid)
 

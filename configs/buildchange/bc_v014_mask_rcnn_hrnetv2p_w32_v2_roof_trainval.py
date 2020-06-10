@@ -98,6 +98,7 @@ model = dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
         type='MaskFootprintHead',
+        num_classes=2,
         loss_footprint=dict(
             type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
@@ -197,12 +198,14 @@ for city in cities:
     train_ann_file.append(data_root + 'annotations/buildchange_v2_trainval_{}_roof_footprint.json'.format(city))
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
-    imgs_per_gpu=2,
+    imgs_per_gpu=1,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=train_ann_file,
         img_prefix=img_prefix,
+        # ann_file=data_root + 'annotations/buildchange_v2_trainval_sampling_roof_footprint.json',
+        # img_prefix=data_root + '../' + 'sampling/images/',
         pipeline=train_pipeline,
         bbox_type='building'),
     val=dict(
