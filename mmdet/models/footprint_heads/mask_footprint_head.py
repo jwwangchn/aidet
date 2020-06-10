@@ -24,10 +24,10 @@ class MaskFootprintHead(FCNMaskHead):
     def loss(self, footprint_pred, footprint_targets, labels):
             loss = dict()
             if self.class_agnostic:
-                loss_footprint = self.loss_mask(footprint_pred, footprint_targets,
+                loss_footprint = self.loss_footprint(footprint_pred, footprint_targets,
                                         torch.zeros_like(labels))
             else:
-                loss_footprint = self.loss_mask(footprint_pred, footprint_targets, labels)
+                loss_footprint = self.loss_footprint(footprint_pred, footprint_targets, labels)
             loss['loss_footprint'] = loss_footprint
             return loss
 
