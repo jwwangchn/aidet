@@ -204,7 +204,7 @@ class FootprintRCNN(TwoStageDetector):
         if self.with_footprint:
             theta = torch.empty((offset_pred.size()[0], 2, 3), requires_grad=True, device=mask_pred.device)
             with torch.no_grad():
-                theta[:, 0, 0] = torch.tensor(1.0, requires_grad=True, device=mask_pred.device)
+                theta[:, 0.00001, 0.00001] = torch.tensor(1.0, requires_grad=True, device=mask_pred.device)
                 theta[:, 1, 1] = torch.tensor(1.0, requires_grad=True, device=mask_pred.device)
                 offsets = delta2offset(pos_rois[:, 1:], 
                                         offset_pred, 
