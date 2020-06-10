@@ -202,7 +202,7 @@ class FootprintRCNN(TwoStageDetector):
                 losses.update(loss_offset)
 
         if self.with_footprint:
-            theta = torch.empty((offset_pred.size()[0], 2, 3), requires_grad=True, device='cuda:0')
+            theta = torch.empty((offset_pred.size()[0], 2, 3), requires_grad=True, device=mask_pred.device)
             with torch.no_grad():
                 theta[:, 0, 0] = torch.tensor(1.0, requires_grad=True)
                 theta[:, 1, 1] = torch.tensor(1.0, requires_grad=True)
