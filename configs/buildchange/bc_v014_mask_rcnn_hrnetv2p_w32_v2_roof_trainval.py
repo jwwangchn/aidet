@@ -98,11 +98,7 @@ model = dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
         type='FCNMaskHead',
-        num_convs=4,
-        in_channels=256,
-        conv_out_channels=256,
-        num_classes=2,
-        loss_mask=dict(
+        loss_footprint=dict(
             type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
