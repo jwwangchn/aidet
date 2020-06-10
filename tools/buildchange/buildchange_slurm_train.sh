@@ -15,7 +15,7 @@ then
 
     srun -p ad_rs \
     -N2 \
-    --job-name=bc_v009 \
+    --job-name=${model} \
     --gres=gpu:8 \
     -n16 \
     --ntasks-per-node=8 \
