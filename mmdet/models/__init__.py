@@ -12,6 +12,7 @@ from .registry import (BACKBONES, DETECTORS, HEADS, LOSSES, NECKS,
 from .roi_extractors import *  # noqa: F401,F403
 from .shared_heads import *  # noqa: F401,F403
 from .offset_head import *
+from .footprint_heads import *
 
 __all__ = [
     'BACKBONES', 'NECKS', 'ROI_EXTRACTORS', 'SHARED_HEADS', 'HEADS', 'LOSSES',

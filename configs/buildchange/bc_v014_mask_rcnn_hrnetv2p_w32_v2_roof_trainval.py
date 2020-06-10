@@ -97,7 +97,7 @@ model = dict(
         loss_offset=dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
-        type='FCNMaskHead',
+        type='MaskFootprintHead',
         loss_footprint=dict(
             type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)))
 # model training and testing settings
