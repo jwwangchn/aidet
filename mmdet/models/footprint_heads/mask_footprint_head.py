@@ -14,6 +14,7 @@ from ..builder import build_loss
 @HEADS.register_module
 class MaskFootprintHead(FCNMaskHead):
     def __init__(self,
+                num_classes=2,
                 loss_footprint=dict(
                      type='CrossEntropyLoss', use_mask=True, loss_weight=1.0),
                 *args, 
