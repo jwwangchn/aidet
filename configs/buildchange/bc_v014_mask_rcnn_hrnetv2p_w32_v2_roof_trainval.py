@@ -22,6 +22,8 @@ DONE (t=0.27s).
 """
 
 # model settings
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+
 model = dict(
     type='FootprintRCNN',
     pretrained='torchvision://resnet50',
@@ -94,6 +96,7 @@ model = dict(
         conv_out_channels=256,
         target_means=[0., 0.],
         target_stds=[0.1, 0.1],
+        norm_cfg=norm_cfg,
         loss_offset=dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
@@ -221,7 +224,7 @@ data = dict(
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+optimizer_config = dict(grad_clip=dict(max_norm=10, norm_type=2))
 # learning policy
 lr_config = dict(
     policy='step',
