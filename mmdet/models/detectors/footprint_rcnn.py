@@ -223,6 +223,5 @@ class FootprintRCNN(TwoStageDetector):
                                             pos_labels)
 
             losses.update(loss_fooprint)
-            print("loss_fooprint: ", loss_fooprint)
 
         return losses
