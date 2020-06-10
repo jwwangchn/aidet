@@ -211,7 +211,7 @@ class FootprintRCNN(TwoStageDetector):
                                         [0, 0], 
                                         [1.0, 1.0], 
                                         (1024, 1024))
-                theta[:, :, -1] = offsets.to
+                theta[:, :, -1] = offsets
             grid = F.affine_grid(theta, mask_pred.size())
             footprint_pred = F.grid_sample(mask_pred, grid)
 
