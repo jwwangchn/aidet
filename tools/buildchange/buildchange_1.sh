@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #------------------------------config-----------------------------------
-model='bc_v014_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
+model='bc_v013_mask_rcnn_hrnetv2p_w32_v2_roof_trainval'
 epoch=12
 dataset='buildchange'
 
@@ -41,7 +41,7 @@ then
     export CUDA_VISIBLE_DEVICES=0
     mkdir -p results/${dataset}/${model}
 
-    python tools/buildchange/buildchange_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model}
+    python tools/buildchange/buildchange_test.py configs/${dataset}/${model}.py work_dirs/${model}/epoch_${epoch}.pth --out results/${dataset}/${model}/coco_results.pkl --eval bbox segm --options jsonfile_prefix=$(pwd)/results/${dataset}/${model} --show
 elif [ $2 == 0 ]
 then
     # read the results file

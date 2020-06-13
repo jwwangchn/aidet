@@ -104,7 +104,7 @@ class ConvFCOffsetHead(nn.Module):
                     rcnn_test_cfg, 
                     scale_factor, 
                     rescale,
-                    img_shape):
+                    img_shape=[1024, 1024]):
         if offset_target is not None:
             offsets = delta2offset(det_bboxes, 
                                    offset_pred, 

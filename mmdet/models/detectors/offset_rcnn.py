@@ -1,3 +1,6 @@
+import mmcv
+import numpy as np
+import pycocotools.mask as maskUtils
 import torch
 import torch.nn as nn
 
@@ -6,10 +9,14 @@ from .. import builder
 
 from ..registry import DETECTORS
 from .two_stage import TwoStageDetector
+from .test_mixins import OffsetTestMixin
+
+from mmdet.core import auto_fp16, get_classes, tensor2imgs
+from mmdet.utils import print_log
 
 
 @DETECTORS.register_module
-class OffsetRCNN(TwoStageDetector):
+class OffsetRCNN(TwoStageDetector, OffsetTestMixin):
 
     def __init__(self,
                  backbone,
@@ -179,7 +186,7 @@ class OffsetRCNN(TwoStageDetector):
                 losses.update(loss_mask)
 
         # offset head forward and loss
-        if self.offset_head:
+        if self.with_footprint:
             pos_rois = bbox2roi(
                 [res.pos_bboxes for res in sampling_results])
             offset_feats = self.offset_roi_extractor(
@@ -196,3 +203,94 @@ class OffsetRCNN(TwoStageDetector):
                 losses.update(loss_offset)
 
         return losses
+
+    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+        """Test without augmentation."""
+        assert self.with_bbox, 'Bbox head must be implemented.'
+
+        x = self.extract_feat(img)
+
+        if proposals is None:
+            proposal_list = self.simple_test_rpn(x, img_metas,
+                                                 self.test_cfg.rpn)
+        else:
+            proposal_list = proposals
+
+        det_bboxes, det_labels = self.simple_test_bboxes(
+            x, img_metas, proposal_list, self.test_cfg.rcnn, rescale=rescale)
+        bbox_results = bbox2result(det_bboxes, det_labels,
+                                   self.bbox_head.num_classes)
+
+        if not self.with_mask or not self.with_footprint:
+            return bbox_results
+        else:
+            segm_results = self.simple_test_mask(
+                x, img_metas, det_bboxes, det_labels, rescale=rescale)
+
+            offset_results = self.simple_test_offset(
+                x, img_metas, det_bboxes, det_labels, rescale=rescale)
+            
+            return bbox_results, segm_results, offset_results
+
+
+    def show_result(self, data, result, dataset=None, score_thr=0.25):
+        if isinstance(result, tuple):
+            bbox_result, segm_result, offset_result = result
+        else:
+            bbox_result, segm_result, offset_result = result, None, None
+
+        img_tensor = data['img'][0]
+        img_metas = data['img_metas'][0].data[0]
+        imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+        assert len(imgs) == len(img_metas)
+
+        if dataset is None:
+            class_names = self.CLASSES
+        elif isinstance(dataset, str):
+            class_names = get_classes(dataset)
+        elif isinstance(dataset, (list, tuple)):
+            class_names = dataset
+        else:
+            raise TypeError(
+                'dataset must be a valid dataset name or a sequence'
+                ' of class names, not {}'.format(type(dataset)))
+
+        for img, img_meta in zip(imgs, img_metas):
+            h, w, _ = img_meta['img_shape']
+            img_show = img[:h, :w, :]
+
+            bboxes = np.vstack(bbox_result)
+            # draw segmentation masks
+            # if segm_result is not None:
+            #     segms = mmcv.concat_list(segm_result)
+            #     inds = np.where(bboxes[:, -1] > score_thr)[0]
+            #     for i in inds:
+            #         color_mask = np.random.randint(
+            #             0, 256, (1, 3), dtype=np.uint8)
+            #         mask = maskUtils.decode(segms[i]).astype(np.bool)
+            #         img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+
+            if offset_result is not None:
+                # offsets = np.vstack(offset_result)
+                inds = np.where(bboxes[:, -1] > score_thr)[0]
+                # for i in inds:
+                #     color_mask = np.random.randint(
+                #         0, 256, (1, 3), dtype=np.uint8)
+                #     mask = maskUtils.decode(segms[i]).astype(np.bool)
+                #     img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
+            
+            
+            # draw bounding boxes
+            labels = [
+                np.full(bbox.shape[0], i, dtype=np.int32)
+                for i, bbox in enumerate(bbox_result)
+            ]
+            labels = np.concatenate(labels)
+            mmcv.imshow_det_bboxes(
+                img_show,
+                bboxes,
+                labels,
+                class_names=class_names,
+                score_thr=score_thr)
+
+        

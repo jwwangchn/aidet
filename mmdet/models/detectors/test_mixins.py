@@ -409,3 +409,37 @@ class RBBoxTestMixin(object):
                 scale_factor=1.0,
                 rescale=False)
         return thetaobb_result
+
+
+class OffsetTestMixin(object):
+    def simple_test_offset(self,
+                         x,
+                         img_metas,
+                         det_bboxes,
+                         det_labels,
+                         rescale=False):
+        # image shape of the first image in the batch (only one)
+        ori_shape = img_metas[0]['ori_shape']
+        scale_factor = img_metas[0]['scale_factor']
+        if det_bboxes.shape[0] == 0:
+            offset_result = [[] for _ in range(2)]
+        else:
+            # if det_bboxes is rescaled to the original image size, we need to
+            # rescale it back to the testing scale to obtain RoIs.
+            if rescale and not isinstance(scale_factor, float):
+                scale_factor = torch.from_numpy(scale_factor).to(
+                    det_bboxes.device)
+            _bboxes = (
+                det_bboxes[:, :4] * scale_factor if rescale else det_bboxes)
+            offset_rois = bbox2roi([_bboxes])
+            offset_feats = self.offset_roi_extractor(
+                x[:len(self.offset_roi_extractor.featmap_strides)], offset_rois)
+            if self.with_shared_head:
+                offset_feats = self.shared_head(offset_feats)
+            offset_pred = self.offset_head(offset_feats)
+            offset_result = self.offset_head.get_offsets(offset_pred, 
+                                                        _bboxes,
+                                                       self.test_cfg.rcnn,
+                                                       scale_factor,
+                                                       rescale)
+        return offset_result
