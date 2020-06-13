@@ -83,8 +83,8 @@ def delta2offset(rois,
     gx = torch.addcmul(x_zeros, 1, pw, dx)  # gx = px + pw * dx
     gy = torch.addcmul(y_zeros, 1, ph, dy)  # gy = py + ph * dy
     if max_shape is not None:
-        gx = gx.clamp(min=0, max=max_shape[1] - 1)
-        gy = gy.clamp(min=0, max=max_shape[0] - 1)
+        gx = gx.clamp(min=-(max_shape[1] - 1), max=max_shape[1] - 1)
+        gy = gy.clamp(min=-(max_shape[0] - 1), max=max_shape[0] - 1)
     bboxes = torch.stack([gx, gy], dim=-1).view_as(deltas)
     return bboxes
 

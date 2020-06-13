@@ -105,29 +105,19 @@ class ConvFCOffsetHead(nn.Module):
                     scale_factor, 
                     rescale,
                     img_shape=[1024, 1024]):
-        if offset_target is not None:
+        if offset_pred is not None:
             offsets = delta2offset(det_bboxes, 
                                    offset_pred, 
                                    self.target_means, 
                                    self.target_stds, 
                                    img_shape)
-
-        if isinstance(offset_pred, torch.Tensor):
-            offset_pred = offset_pred.cpu().numpy()
-        assert isinstance(offset_pred, np.ndarray)
-
-        offset_pred = offset_pred.astype(np.float32)
-
-        offsets = [[] for _ in range(2)]
-        bboxes = det_bboxes.cpu().numpy()[:, :4]
-
-        if rescale:
-            scale_factor = scale_factor
         else:
-            scale_factor = 1.0
+            offsets = torch.zeros((det_bboxes.size()[0], 2))
 
-        for i in range(bboxes.shape[0]):
-            offset_pred_ = offset_pred[i, :] / scale_factor
-            offsets.append(offset_pred_)
+        if isinstance(offsets, torch.Tensor):
+            offsets = offsets.cpu().numpy()
+        assert isinstance(offsets, np.ndarray)
+
+        offsets = offsets.astype(np.float32)
 
         return offsets
