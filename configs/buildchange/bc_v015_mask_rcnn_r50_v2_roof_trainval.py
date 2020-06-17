@@ -25,35 +25,20 @@ DONE (t=0.27s).
 # model settings
 model = dict(
     type='OffsetRCNN',
-    pretrained='open-mmlab://msra/hrnetv2_w32',
+    pretrained='torchvision://resnet50',
     backbone=dict(
-        type='HRNet',
-        extra=dict(
-            stage1=dict(
-                num_modules=1,
-                num_branches=1,
-                block='BOTTLENECK',
-                num_blocks=(4, ),
-                num_channels=(64, )),
-            stage2=dict(
-                num_modules=1,
-                num_branches=2,
-                block='BASIC',
-                num_blocks=(4, 4),
-                num_channels=(32, 64)),
-            stage3=dict(
-                num_modules=4,
-                num_branches=3,
-                block='BASIC',
-                num_blocks=(4, 4, 4),
-                num_channels=(32, 64, 128)),
-            stage4=dict(
-                num_modules=3,
-                num_branches=4,
-                block='BASIC',
-                num_blocks=(4, 4, 4, 4),
-                num_channels=(32, 64, 128, 256)))),
-    neck=dict(type='HRFPN', in_channels=[32, 64, 128, 256], out_channels=256),
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        style='pytorch'),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        num_outs=5),
     rpn_head=dict(
         type='RPNHead',
         in_channels=256,
@@ -121,7 +106,7 @@ train_cfg = dict(
             neg_iou_thr=0.3,
             min_pos_iou=0.3,
             ignore_iof_thr=-1,
-            gpu_assign_thr=64),
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=256,
@@ -145,7 +130,7 @@ train_cfg = dict(
             neg_iou_thr=0.5,
             min_pos_iou=0.5,
             ignore_iof_thr=-1,
-            gpu_assign_thr=64),
+            gpu_assign_thr=512),
         sampler=dict(
             type='RandomSampler',
             num=512,
@@ -209,7 +194,7 @@ for city in cities:
     img_prefix.append(data_root + '../' + "{}/images/".format(city))
 data = dict(
     imgs_per_gpu=2,
-    workers_per_gpu=0,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file=train_ann_file,
@@ -228,7 +213,7 @@ data = dict(
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.08, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
