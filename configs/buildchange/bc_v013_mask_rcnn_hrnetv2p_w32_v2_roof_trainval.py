@@ -131,7 +131,7 @@ model = dict(
         in_channels=256,
         conv_out_channels=256,
         target_means=[0., 0.],
-        target_stds=[0.1, 0.1],
+        target_stds=[1.0, 1.0],
         loss_offset=dict(
             type='MSELoss', loss_weight=1.0)))
 # model training and testing settings
