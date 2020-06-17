@@ -18,11 +18,11 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Support methods
 
-- [ ] [Theta-based OBB]()
-- [ ] [Point-based OBB]()
-- [ ] [H-based OBB]()
-- [ ] [CenterMap OBB]()
-- [ ] [Mask OBB]()
+- [x] [Theta-based OBB]()
+- [x] [Point-based OBB]()
+- [x] [H-based OBB]()
+- [x] [CenterMap OBB]()
+- [x] [Mask OBB]()
 
 
 ## Installation

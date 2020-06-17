@@ -105,6 +105,7 @@ venv.bak/
 
 mmdet/version.py
 data
+results
 .vscode
 .idea
 .DS_Store
