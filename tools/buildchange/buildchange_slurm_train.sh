@@ -18,6 +18,7 @@ then
     --job-name=${model} \
     --gres=gpu:8 \
     -n32 \
+    -x BJ-IDC1-10-10-30-104 \
     --ntasks-per-node=8 \
     --kill-on-bad-exit=1 \
     python -u tools/train.py configs/${dataset}/${model}.py --work_dir=./work_dirs/${model} --launcher="slurm"
