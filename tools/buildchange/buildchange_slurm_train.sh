@@ -19,7 +19,7 @@ then
     --gres=gpu:16 \
     -n32 \
     --ntasks-per-node=16 \
-    --cpus-per-task=4 \
+    --cpus-per-task=2 \
     --kill-on-bad-exit=1 \
     python -u tools/train.py configs/${dataset}/${model}.py --work_dir=./work_dirs/${model} --launcher="slurm"
 elif [ $1 == 2 ]
