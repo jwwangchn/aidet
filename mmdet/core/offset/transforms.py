@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 
-def offset2delta(proposals, gt, means=[0, 0], stds=[1, 1]):
+def offset2delta(proposals, gt, means=[0, 0], stds=[1.0, 1.0]):
     assert proposals.size()[0] == gt.size()[0]
 
     proposals = proposals.float()

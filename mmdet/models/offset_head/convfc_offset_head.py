@@ -24,7 +24,7 @@ class ConvFCOffsetHead(nn.Module):
                  conv_out_channels=256,
                  fc_out_channels=1024,
                  target_means=[0., 0.],
-                 target_stds=[0.1, 0.1],
+                 target_stds=[1.0, 1.0],
                  conv_cfg=None,
                  norm_cfg=None,
                  loss_offset=dict(
@@ -87,8 +87,12 @@ class ConvFCOffsetHead(nn.Module):
         pos_assigned_gt_inds = [
             res.pos_assigned_gt_inds for res in sampling_results
         ]
-        offset_targets = offset_target(pos_proposals, pos_assigned_gt_inds,
-                                   gt_offsets, rcnn_train_cfg)
+        offset_targets = offset_target(pos_proposals, 
+                                       pos_assigned_gt_inds,
+                                       gt_offsets,
+                                       rcnn_train_cfg,
+                                       target_means=self.target_means,
+                                       target_stds=self.target_stds)
         return offset_targets
 
     def loss(self, offset_pred, offset_targets, labels):
