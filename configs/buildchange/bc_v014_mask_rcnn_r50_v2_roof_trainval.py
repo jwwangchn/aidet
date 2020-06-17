@@ -115,7 +115,7 @@ model = dict(
         in_channels=256,
         conv_out_channels=256,
         target_means=[0., 0.],
-        target_stds=[0.1, 0.1],
+        target_stds=[1.0, 1.0],
         loss_offset=dict(
             type='MSELoss', loss_weight=1.0)),
     footprint_head=dict(
@@ -242,13 +242,13 @@ data = dict(
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
-optimizer = dict(type='SGD', lr=0.04, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.08, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
     policy='step',
     warmup='exp',
-    warmup_iters=2000,
+    warmup_iters=5000,
     warmup_ratio=1.0 / 10,
     step=[8, 11])
 checkpoint_config = dict(interval=1)

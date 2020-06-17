@@ -14,11 +14,11 @@ then
     set -x
 
     srun -p ad_rs \
-    -N2 \
+    -N4 \
     --job-name=${model} \
-    --gres=gpu:8 \
-    -n16 \
-    --ntasks-per-node=8 \
+    --gres=gpu:16 \
+    -n32 \
+    --ntasks-per-node=16 \
     --cpus-per-task=5 \
     --kill-on-bad-exit=1 \
     python -u tools/train.py configs/${dataset}/${model}.py --work_dir=./work_dirs/${model} --launcher="slurm"
