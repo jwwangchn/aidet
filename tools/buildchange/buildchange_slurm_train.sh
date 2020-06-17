@@ -16,10 +16,10 @@ then
     srun -p ad_rs \
     -N4 \
     --job-name=${model} \
-    --gres=gpu:16 \
+    --gres=gpu:8 \
     -n32 \
-    --ntasks-per-node=16 \
-    --cpus-per-task=2 \
+    --ntasks-per-node=8 \
+    --cpus-per-task=5 \
     --kill-on-bad-exit=1 \
     python -u tools/train.py configs/${dataset}/${model}.py --work_dir=./work_dirs/${model} --launcher="slurm"
 elif [ $1 == 2 ]
