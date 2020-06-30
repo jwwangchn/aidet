@@ -12,13 +12,36 @@ Evaluate annotation type *bbox*
 DONE (t=29.12s).
 Accumulating evaluation results... 
 DONE (t=0.28s). 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.089                      
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.248                      
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.052                      
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.009                      
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.102                      
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.143                      
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.007                      
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.049                      
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.206
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.035
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.220
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.376
 
 
 Evaluate annotation type *segm*
 DONE (t=33.96s).
 Accumulating evaluation results...
 DONE (t=0.27s).
-
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.153
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.382
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.079
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.013
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.191
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.169
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.008
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.067
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.252
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.039
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.296
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.317
 
 """
 
@@ -208,8 +231,8 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/buildchange_v2_val_xian_fine.json',
-        img_prefix=data_root + '../' + 'xian_fine/images/',
+        ann_file= 'data/buildchange/v2/coco/' + 'annotations/buildchange_v2_val_xian_fine.json',
+        img_prefix= 'data/buildchange/v2/coco/' + '../' + 'xian_fine/images/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
