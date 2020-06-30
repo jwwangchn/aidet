@@ -231,8 +231,8 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file= 'data/buildchange/v2/coco/' + 'annotations/buildchange_v2_val_xian_fine.json',
-        img_prefix= 'data/buildchange/v2/coco/' + '../' + 'xian_fine/images/',
+        ann_file= 'data/buildchange/v1/coco/' + 'annotations/buildchange_v1_val_xian_fine.json',
+        img_prefix= 'data/buildchange/v1/coco/' + '../' + 'xian_fine/images/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric=['bbox', 'segm'])
 # optimizer
