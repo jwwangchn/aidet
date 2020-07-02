@@ -120,6 +120,8 @@ def main():
     cfg.seed = args.seed
     meta['seed'] = args.seed
 
+    print("=====================================================")
+
     model = build_detector(
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
 

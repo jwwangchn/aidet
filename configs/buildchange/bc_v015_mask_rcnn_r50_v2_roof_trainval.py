@@ -43,6 +43,62 @@ DONE (t=0.27s).
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.275
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.301
 
+F1Score Total	        0.462124248
+Precision	            0.62629006
+Recall	                0.366147983
+True Positive Total	    2306
+False Positive Total	1376
+False Negative Total	3992
+meanIOU	                0.52763761
+meanBoundaryF	        0.35959184
+
+
+F1Score Total	        0.380550775
+Precision	            0.454751131
+Recall	                0.327167801
+True Positive Total	    2211
+False Positive Total	2651
+False Negative Total	4547
+meanIOU	                0.426654478
+meanBoundaryF	        0.266002661
+
+
+dalian: (footprint), 
+score = 0.45
+
+F1Score Total	        0.558862559
+Precision	            0.610099338
+Recall	                0.515564883
+True Positive Total	    1474
+False Positive Total	942
+False Negative Total	1385
+meanIOU	                0.494797803
+meanBoundaryF	        0.310451469
+
+score = 0.50
+
+F1Score Total	        0.561300431
+Precision	            0.637739208
+Recall	                0.501224204
+True Positive Total	    1433
+False Positive Total	814
+False Negative Total	1426
+meanIOU	                0.5134726
+meanBoundaryF	        0.318870834
+
+dalian (roof):
+F1Score Total	        0.580190476
+Precision	            0.678698752
+Recall	                0.50665336
+True Positive Total	    1523
+False Positive Total	721
+False Negative Total	1483
+meanIOU	                0.529913333
+meanBoundaryF	        0.347945383
+
+
+
+
 """
 
 # model settings
